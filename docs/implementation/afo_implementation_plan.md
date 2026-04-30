@@ -9,8 +9,8 @@ A.F.O is implemented as a co-designed stack:
 - RTL prototypes for critical data movement path
 
 Fixed packaging convention used in this roadmap:
-- Layer 1 (bottom): compute die
-- Layer 2 (top): memory die with inner HBM rectangular ring and outer HBF rectangular ring
+- Layer 1 (top): compute die
+- Layer 2 (bottom): memory die with inner HBM rectangular ring and outer HBF rectangular ring
 
 Target artifacts are aligned to five prototype levels:
 1. software simulator

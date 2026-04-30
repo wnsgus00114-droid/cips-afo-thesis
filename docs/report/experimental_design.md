@@ -32,6 +32,18 @@
 - `FlashAttn_like` (policy-level synthetic)
 - `TensorRTLLM_like` (policy-level synthetic)
 
+### 2.1 Baseline Fairness Contract
+- Equal workload across baselines:
+  - same `batch_size`, `context_len`, `kv_chunk_size_kb`
+- Equal bandwidth/latency constraints across baselines:
+  - same `hbm_bw_gbs`, `hbf_bw_gbs`, `bridge_bw_gbs`, `hbf_latency_us`
+- Equal capacity constraints across baselines:
+  - same `hbm_capacity_gb`, `hbf_capacity_gb`, `sram_capacity_mb`
+- Only mechanism/policy knobs vary:
+  - `shared_kv_ratio`, `weight_hbf_fraction`, `prefetch_accuracy`, `matrix_efficiency`, `routing_diversity`, `LHB`, `prefetch_depth`
+- Disclosure artifact:
+  - `results/tables/baseline_fairness.md`
+
 ## 3. Sweep Experiments
 - `batch_size`: `[16, 32, 64, 128, 256]`
 - `context_len`: `[1024, 2048, 4096, 8192, 16384]`
@@ -62,7 +74,20 @@ These scenarios jointly vary: concurrent users, burst probability, jitter, bridg
   - worst markers (`latency_p99_worst_ms`, `latency_max_worst_ms`)
   - throughput percentiles (`tokens_per_sec_p05`, `tokens_per_sec_p95`)
 
-## 6. Reproducibility and Artifacts
+## 6. Simulator Trust / Sanity Validation
+- Anchor checks:
+  - `AFO_full` must outperform `HBM_only_GPU` in throughput and p99 under same constraints
+  - normalized `vLLM_like` / `FlashAttn_like` / `TensorRTLLM_like` trends are bounded to plausible envelopes
+- Directional trend checks:
+  - `bridge_bw_gbs` vs `latency_p99_ms` (negative correlation expected)
+  - `prefetch_accuracy` vs `overlap_efficiency` (positive correlation expected)
+  - `shared_kv_ratio` vs `tokens_per_sec` (positive correlation expected)
+- Model linkage checks:
+  - bound mean `model_error_pct` to avoid unbounded analytical drift
+- Artifact:
+  - `results/tables/simulator_sanity_checks.md`
+
+## 7. Reproducibility and Artifacts
 - Parameter disclosure:
   - `results/sim/parameter_snapshot.json`
   - `results/tables/reproducibility_params.md`
@@ -79,6 +104,12 @@ These scenarios jointly vary: concurrent users, burst probability, jitter, bridg
   - `results/training_summary/training_summary.md`
 - Tables and summaries:
   - `results/tables/baseline_comparison.md`
+  - `results/tables/baseline_fairness.md`
+  - `results/tables/simulator_sanity_checks.md`
+  - `results/tables/key_sensitivity_panels.md`
   - `results/tables/sweep_summary.md`
   - `results/summary/simulation_summary.md`
+  - `results/summary/causal_chain_analysis.md`
+  - `results/summary/tail_latency_root_cause.md`
+  - `results/summary/thermal_impact_analysis.md`
   - Training design doc: `docs/report/training_design.md`

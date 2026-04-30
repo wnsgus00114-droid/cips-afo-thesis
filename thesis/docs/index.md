@@ -9,7 +9,7 @@
 
 핵심 산출물:
 1. 논문형 본문: [A.F.O Thesis Manuscript](./thesis_manuscript.md)
-2. 아카이브 제출용 LaTeX: [`../paper/main.tex`](../paper/main.tex)
+2. 연구 원고 초안: [`../../paper/afo_paper_draft.md`](../../paper/afo_paper_draft.md)
 3. 3D 모델(깃허브 회전 가능): [3D Models README](./assets/models/README.md)
 4. 피겨 설명: [Figure Atlas](./figure_atlas.md)
 

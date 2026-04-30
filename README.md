@@ -1,25 +1,24 @@
 # A.F.O (All For One)
 
-Mechanism-driven 3D AI architecture study for LLM serving/training policy validation.
+Mechanism-driven 3D AI architecture study for long-context LLM inference under finite bridge bandwidth.
 
-## One-Line Thesis
-A.F.O enforces **tier-locality** and **descriptor-coupled overlap** so long-context LLM workloads remain stable under **finite bridge bandwidth** and **HBM/HBF latency asymmetry**.
+## One-Line Contribution
+Prior works optimize components; **A.F.O enforces cross-tier execution contracts that make overlap deterministic under bandwidth constraints**.
 
-## What Is New (Not Just a Combination)
-- Enforced physical topology: **Top Layer (L1) = Compute**, **Bottom Layer (L2) = Memory Rings**
-  - L2 inner ring: HBM rectangular continuous ring
-  - L2 outer ring: HBF rectangular continuous ring
-- Enforced memory semantics:
-  - HBM: mutable runtime-hot state (runtime KV, activations, metadata)
-  - HBF: high-capacity read-mostly state (weights, shared KV catalog, cold chunks)
-- Enforced execution contract:
-  - route-aware shared/unique KV split
-  - layer-overlapped prefetch
-  - SRAM A/B swap + LHB replay
-- Stress-validated methodology:
-  - tail latency / bottleneck migration / thermal coupling / process jitter
+## Positioning
+This repository is an **architecture-feasibility study**.
+- Not silicon-ready
+- Not production-grade serving stack
+- Policy-level validation through cycle-inspired simulation + stress sweeps
 
-## Reviewer Quick Start (README-Only Review)
+## Physical Contract (Fixed)
+- Top / Layer1: compute die
+- Bottom / Layer2: memory tier
+  - inner rectangular HBM ring around compute footprint
+  - outer rectangular HBF ring around HBM ring
+- Interconnect: silicon-bridge-like finite-bandwidth fabric
+
+## Reviewer Quick Start
 ### 1) Environment
 ```bash
 python3 -m venv .venv
@@ -31,6 +30,8 @@ source .venv/bin/activate
 python3 experiments/scripts/run_sweeps.py --config experiments/configs/base.json --num-tokens 256 --seeds 11,23,37
 python3 experiments/scripts/gen_baselines.py
 python3 experiments/scripts/plot_results.py
+python3 experiments/scripts/sanity_validate.py
+python3 experiments/scripts/analyze_results.py
 python3 experiments/scripts/make_summary.py
 ```
 
@@ -40,68 +41,67 @@ python3 experiments/scripts/run_training_experiments.py --config experiments/con
 python3 experiments/scripts/plot_training_results.py
 ```
 
-## Key Results Snapshot
-### Inference (Synthetic, Cycle-Inspired)
-- Best baseline throughput: **AFO_full = 14.68 tok/s**
-- Best baseline p99 latency: **69.235 ms**
-- Worst stress tail: **worst_case_tail p99 = 804.009 ms**
+## Key Inference Results (Current Run)
+- AFO baseline: `12.74 tok/s`, `p99=80.004 ms`
+- HBM-only baseline: `12.30 tok/s`, `p99=82.918 ms`
+- Worst stress tail: `worst_case_tail p99=804.009 ms`
+- Worst stress bridge contention: `133816.345 ms`
+- Simulator sanity: `7 PASS / 0 FAIL`
 
-Sources:
-- `results/tables/baseline_comparison.md`
-- `results/summary/simulation_summary.md`
-- `results/sim/stress_scenarios.csv`
+Primary artifacts:
+- [baseline_comparison.md](results/tables/baseline_comparison.md)
+- [baseline_fairness.md](results/tables/baseline_fairness.md)
+- [simulator_sanity_checks.md](results/tables/simulator_sanity_checks.md)
+- [simulation_summary.md](results/summary/simulation_summary.md)
+- [causal_chain_analysis.md](results/summary/causal_chain_analysis.md)
+- [tail_latency_root_cause.md](results/summary/tail_latency_root_cause.md)
+- [thermal_impact_analysis.md](results/summary/thermal_impact_analysis.md)
 
-### Training Policy Extension (System SW)
-- Best stability scenario: **lora_nominal stability = 66.78**
-- Worst tail scenario: **lora_worst_tail p99 = 8,754,839.06 ms**
-- OOM behavior explicitly tracked (`oom_hbm`, `oom_hbf`)
+## Why A.F.O Wins (Causal Chain)
+- KV reuse up -> batch_gain up -> shared-path GEMM efficiency up
+- Prefetch accuracy up -> overlap efficiency up -> p99 latency down
+- HBF tier separation + staging -> bridge contention migration down
 
-Sources:
-- `results/training_tables/training_scenario_summary.md`
-- `results/training_summary/training_summary.md`
+Evidence files:
+- [key_sensitivity_panels.md](results/tables/key_sensitivity_panels.md)
+- [bridge_bw_gbs_tail_p99.svg](results/plots/bridge_bw_gbs_tail_p99.svg)
+- [prefetch_accuracy_overlap_eff.svg](results/plots/prefetch_accuracy_overlap_eff.svg)
+- [shared_kv_ratio_throughput.svg](results/plots/shared_kv_ratio_throughput.svg)
 
-## Evidence Artifacts (Direct Review Targets)
-### Architecture and Design Docs
-- `docs/architecture/afo_system_overview.md`
-- `docs/implementation/afo_implementation_plan.md`
-- `docs/implementation/memory_map.md`
-- `docs/implementation/dataflow.md`
-- `docs/implementation/runtime_software_design.md`
+## Baseline Fairness Policy
+All baselines use identical:
+- workload: batch/context/chunk size
+- capacity: HBM/HBF/SRAM
+- bandwidth and latency: HBM BW, HBF BW, bridge BW, HBF latency
 
-### Research/Validation Docs
-- `docs/report/experimental_design.md`
-- `docs/report/power_performance_model.md`
-- `docs/report/training_design.md`
-- `docs/report/reference_alignment.md`
+Only mechanism knobs vary:
+- shared KV ratio
+- HBF weight fraction
+- prefetch accuracy
+- routing diversity
+- LHB and prefetch depth
+- matrix efficiency
 
-### Core Code
-- Inference simulator: `sim/afo_simulator.py`
-- Training simulator: `sim/afo_training_simulator.py`
-- Inference runtime mock: `runtime/afo_runtime.py`
-- Training runtime mock: `runtime/afo_training_runtime.py`
-- Inference experiment scripts: `experiments/scripts/run_sweeps.py`, `gen_baselines.py`, `plot_results.py`, `make_summary.py`
-- Training experiment scripts: `experiments/scripts/run_training_experiments.py`, `plot_training_results.py`
+See [baseline_fairness.md](results/tables/baseline_fairness.md) for full disclosure.
 
-### Result Tables/Plots
-- Inference CSV/plots: `results/sim/`, `results/plots/`, `results/tables/`, `results/summary/`
-- Training CSV/plots: `results/training/`, `results/training_plots/`, `results/training_tables/`, `results/training_summary/`
+## Repository Map
+- Architecture docs: `docs/architecture/`, `docs/implementation/`
+- Report docs: `docs/report/`
+- Reviewer closure matrix: [reviewer_feedback_closure.md](docs/report/reviewer_feedback_closure.md)
+- Simulator: `sim/afo_simulator.py`, `sim/afo_training_simulator.py`
+- Runtime mock: `runtime/afo_runtime.py`, `runtime/afo_training_runtime.py`
+- Experiments: `experiments/scripts/`
+- Results: `results/`
+- Thesis package: [thesis/README.md](thesis/README.md)
 
 ## 3D Visualization
 - Python render: `3d/python/chip_3d_plot.py`, `3d/python/chip_3d_svg.py`
-- Three.js interactive: `3d/threejs/index.html`, `3d/threejs/main.js`
-- Visualization pipeline doc: `docs/visualization/visualization_pipeline.md`
-
-## Paper Package (Local-Only)
-- `result_paper/` is intentionally ignored from Git tracking.
-- Thesis Word build script exists locally at `result_paper/scripts/build_word_paper.py`.
+- Three.js viewer: [3d/threejs/index.html](3d/threejs/index.html)
 
 ## Reproducibility Notes
-- This repository is positioned as an **architecture-feasibility study**.
-- Results are from **cycle-inspired synthetic simulation**, not taped-out silicon.
-- Baselines labeled `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like` are policy-level synthetic baselines.
-
-## Repository Structure
-See `docs/repository_structure.md`.
+- Baselines labeled `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like` are synthetic policy-level approximations.
+- They are included for directional comparison under the same simulator constraints.
+- For hardware publication claims, additional RTL/FPGA/silicon measurements are still required.
 
 ## License
 Research prototype repository for architecture exploration and reviewer evaluation.

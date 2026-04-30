@@ -48,6 +48,16 @@ def load_sweeps() -> dict[str, list[dict]]:
     return data
 
 
+def load_sanity_counts() -> tuple[int, int]:
+    path = TABLE_DIR / "simulator_sanity_checks.csv"
+    if not path.exists():
+        return (0, 0)
+    rows = read_rows(path)
+    passed = sum(1 for r in rows if r.get("status", "").upper() == "PASS")
+    failed = sum(1 for r in rows if r.get("status", "").upper() == "FAIL")
+    return (passed, failed)
+
+
 def write_sweep_table(sweeps: dict[str, list[dict]]) -> None:
     lines = [
         "# Sweep Summary Tables (Synthetic, Multi-Seed)",
@@ -168,8 +178,9 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
     b_high_tail = worst_by(baselines, "latency_p99_ms")
 
     stress_worst_tail = worst_by(stress, "latency_p99_ms") if stress else {}
-    stress_worst_bridge = worst_by(stress, "bridge_util") if stress else {}
+    stress_worst_bridge_contention = worst_by(stress, "bridge_contention_ms_total") if stress else {}
     stress_worst_thermal = worst_by(stress, "thermal_peak_c") if stress else {}
+    sanity_pass, sanity_fail = load_sanity_counts()
 
     lines = [
         "# A.F.O Simulation Summary (Reviewer-Driven Update)",
@@ -183,6 +194,10 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
         "- Multi-seed aggregated sweeps and baselines are used (`seed_count` embedded in CSV).",
         "- Stress scenarios now include burst traffic, bridge saturation, and thermal-hot workload.",
         "- Reproducibility parameters are exported to `results/tables/reproducibility_params.md`.",
+        "- Baseline fairness contract is explicit in `results/tables/baseline_fairness.md`.",
+        "- Simulator sanity checks: `PASS={}` / `FAIL={}` (`results/tables/simulator_sanity_checks.md`).".format(
+            sanity_pass, sanity_fail
+        ),
         "",
         "## 3. Baseline Coverage",
         f"- Best throughput baseline: `{b_best.get('baseline', '-')}` = `{to_float(b_best.get('tokens_per_sec', '0')):.2f}` tokens/sec",
@@ -192,12 +207,13 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
         "",
         "## 4. Tail Latency / Worst-Case",
         f"- Worst stress p99: `{stress_worst_tail.get('scenario', '-')}` -> `{to_float(stress_worst_tail.get('latency_p99_ms', '0')):.3f}` ms",
-        f"- Worst stress bridge utilization: `{stress_worst_bridge.get('scenario', '-')}` -> `{to_float(stress_worst_bridge.get('bridge_util', '0')):.3f}`",
+        f"- Worst stress bridge contention: `{stress_worst_bridge_contention.get('scenario', '-')}` -> `{to_float(stress_worst_bridge_contention.get('bridge_contention_ms_total', '0')):.3f}` ms",
         f"- Worst stress thermal peak: `{stress_worst_thermal.get('scenario', '-')}` -> `{to_float(stress_worst_thermal.get('thermal_peak_c', '0')):.2f}` C",
         "",
         "## 5. Why Bottleneck Changes",
         "- `bottleneck_hbm_pct`, `bottleneck_hbf_pct`, `bottleneck_bridge_pct` are now exported per point.",
         "- Review interpretation should track whether gain came from: `HBF miss penalty↓`, `bridge contention↓`, or `SRAM hit / overlap↑`.",
+        "- Causal chain report: `results/summary/causal_chain_analysis.md`.",
         "",
         "## 6. Model vs Experiment Link",
         "- Each point reports `model_predicted_token_ms`, `model_measured_token_ms`, `model_error_pct`.",
@@ -206,6 +222,7 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
         "## 7. Shared-KV Reuse / Prefetch Evidence",
         "- Exported metrics: `shared_kv_reuse_ratio`, `batch_gain`, `prefetch_coverage_ratio`, `overlap_efficiency`, `lhb_hit_ratio`.",
         "- These metrics quantify whether MoSKA reuse and layer-overlap actually materialize.",
+        "- Dedicated sensitivity panel table: `results/tables/key_sensitivity_panels.md`.",
         "",
         "## 8. Key Sweep Highlights",
     ]
@@ -231,9 +248,12 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
             "- Sweep CSV (agg/raw): `results/sim/sweep_*.csv`, `results/sim/sweep_*_raw.csv`",
             "- Stress scenarios: `results/sim/stress_scenarios.csv`",
             "- Baselines: `results/tables/baseline_comparison.csv`",
+            "- Baseline fairness: `results/tables/baseline_fairness.md`",
+            "- Simulator sanity checks: `results/tables/simulator_sanity_checks.md`",
             "- Sweep tables: `results/tables/sweep_summary.md`",
             "- Plot index: `results/tables/plot_index.md`",
             "- Parameter disclosure: `results/tables/reproducibility_params.md`",
+            "- Causal/tail/thermal analyses: `results/summary/causal_chain_analysis.md`, `results/summary/tail_latency_root_cause.md`, `results/summary/thermal_impact_analysis.md`",
         ]
     )
 

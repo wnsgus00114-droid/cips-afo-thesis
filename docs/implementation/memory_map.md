@@ -3,8 +3,8 @@
 Address width: 52-bit physical unified address
 
 Physical placement convention:
-- Layer 1 (bottom): compute
-- Layer 2 (top): memory
+- Layer 1 (top): compute
+- Layer 2 (bottom): memory
 - Layer-2 memory geometry: inner HBM rectangular ring + outer HBF rectangular ring
 
 ## 1. Region Table

@@ -1,291 +1,189 @@
-# A.F.O (All For One): 3D Integrated AC/DC Silicon for MoSKA + H3 LLM Inference
+# A.F.O (All For One)
+## Enforcing Cross-Tier Execution Contracts for 3D HBM+HBF LLM Inference Under Finite Bridge Bandwidth
 
 ## Abstract
-A.F.O는 장문맥 LLM 추론에서 가장 병목이 되는 KV cache 메모리 접근을 해결하기 위해 설계된 3D 통합 AI 칩 아키텍처다. 본 설계는 (1) Apple Silicon 유사 통합 Compute SoC, (2) MoSKA 기반 Shared/Unique KV 분리 실행, (3) H3형 HBM+HBF 하이브리드 메모리 계층을 단일 패키지로 결합한다. A.F.O는 Shared KV를 chunk 단위로 HBF에 저장하고, runtime KV를 HBM에 유지하며, Layer-N 계산 중 Layer-(N+1) weight/KV/routing metadata를 SRAM A/B 버퍼와 LHB로 선적재한다. 이를 통해 메모리 바운드 GEMV 경로를 Shared-KV GEMM 경로로 전환하고, 브리지/메모리 지연을 계산과 오버랩한다.
+본 연구는 장문맥 LLM 추론에서 발생하는 메모리 벽(memory wall)과 tail latency 문제를 해결하기 위해 A.F.O(3D 통합 AI 칩 아키텍처)를 제안한다. 핵심은 단순 조합이 아니라 **교차 계층 실행 계약(cross-tier execution contract)** 의 강제다. A.F.O는 (1) Top compute die / Bottom memory-tier ring 물리 계약, (2) HBM/HBF tier-locality 메모리 의미론, (3) descriptor-coupled prefetch + SRAM A/B swap + LHB replay 실행 계약을 동시에 강제한다. 본 저장소는 cycle-inspired 시뮬레이터 기반 정책 검증을 제공하며, baseline 공정성 계약, sanity 검증, 민감도 분석, tail root-cause, thermal 영향 분석을 포함한다. 본 결과는 tape-out 성능 주장보다 **아키텍처 실현 가능성 및 메커니즘 검증**에 초점을 둔다.
 
----
+## 1. Problem Definition
+LLM decode 경로는 토큰당 attention 반복으로 인해 다음 문제가 누적된다.
+1. runtime KV cache 급증으로 HBM 용량/대역폭 압박 증가
+2. shared context 재사용 미흡 시 GEMV 중심의 memory-bound 실행 고착
+3. 멀티테넌트 burst 상황에서 bridge 경합으로 p99/p999 tail 급등
 
-## 1. Introduction
-### 1.1 Problem Setting
-LLM serving의 decode 단계는 토큰 생성마다 attention을 반복 수행하므로 다음 두 문제가 누적된다.
-1. KV cache 용량이 요청 수와 문맥 길이에 비례해 폭증
-2. attention이 메모리 바운드로 고착되어 GPU/NPU 연산 유휴 구간 증가
+기존 접근의 공통 한계:
+- 커널 최적화(FlashAttention 계열): 로컬 커널 효율은 개선하나 tier 강제 규칙 부재
+- 런타임 페이징(vLLM 계열): 할당 효율 개선은 가능하나 물리 tier-locality를 보장하지 않음
+- 메모리 tiering(H3 계열): 용량 효율은 개선하나 burst 시 contention 완화가 자동으로 보장되지 않음
 
-A.F.O는 이를 하드웨어/런타임/컴파일러 공동 설계 문제로 정의하고, 메모리 위치 결정 자체를 연산 스케줄링의 일부로 취급한다.
+## 2. One-Line Thesis and Contributions
+### 2.1 One-Line Thesis
+**Prior works optimize components; A.F.O enforces cross-tier execution contracts that make overlap deterministic under bandwidth constraints.**
 
-### 1.2 Design Objective
-A.F.O의 설계 목적은 다음 세 가지를 동시에 만족하는 것이다.
-1. **Capacity scaling**: 장문맥에서도 HBM 용량 한계 회피
-2. **Bandwidth efficiency**: shared context 재사용 극대화
-3. **Latency hiding**: HBF 고지연을 사전적재+LHB로 은닉
+### 2.2 Main Contributions
+1. 물리 계약:
+- Layer1(top)=Compute, Layer2(bottom)=Memory
+- Layer2는 inner HBM rectangular ring + outer HBF rectangular ring
 
----
+2. 메모리 의미론 계약:
+- HBM: runtime-hot mutable state (runtime KV, activation, metadata)
+- HBF: read-mostly state (weights, shared KV catalog, cold chunks)
 
-## 2. System Architecture
+3. 실행 계약:
+- route-aware chunk selection -> descriptor-coupled prefetch
+- Layer N compute 중 Layer N+1 데이터 사전 적재
+- SRAM A/B swap + LHB miss replay
 
-## 2.1 3D Package
-A.F.O 패키지는 2-layer 3D 적층 구조다.
+4. 검증 계약:
+- fairness-locked baseline 설계
+- simulator sanity checks
+- causal chain 분석
+- tail root-cause + thermal 영향 분석
 
-- Layer 1 (Top): Compute SoC
-  - CPU cluster
-  - GPU-like SIMT array
-  - NPU/matrix array
-  - Unified SRAM (scratchpad + cache-like staging)
-  - DMA/prefetch complex
-  - KV scheduler
-  - MoE router hardware
+## 3. A.F.O Architecture
+## 3.1 3D Package Contract
+- Top layer (Compute Die): CPU cluster, GPU-like SIMT, NPU/matrix, unified SRAM, DMA/prefetch, KV scheduler, MoE router
+- Bottom layer (Memory Tier): HBM inner ring + HBF outer ring + address router
+- Interconnect: silicon bridge (finite bandwidth)
 
-- Layer 2 (Bottom): H3 memory
-  - Inner rectangular HBM3 ring (low-latency, full compute-footprint surround)
-  - Outer rectangular HBF ring (high-capacity NAND-based memory, surrounds HBM ring)
-  - Address decode/router macro
+참조 경로:
+- `docs/implementation/memory_map.md`
+- `docs/implementation/dataflow.md`
+- `thesis/docs/figure_atlas.md`
 
-- Interconnect:
-  - Silicon Bridge (EMIB-like)
-  - VN0/VN1/VN2 QoS virtual network
-
-참조 피겨:
-- ![chip](./assets/figures/fig_chip_3d_annotated.png)
-- ![system](./assets/figures/fig_system_3d_annotated.png)
-
-## 2.2 Unified Compute Data Path
-A.F.O는 두 attention 경로를 분리한다.
-1. Shared KV path: batched GEMM
-2. Unique KV path: per-request GEMV
-
-이후 FFN/MoE compute가 NPU matrix pipeline으로 이어진다.
-
----
-
-## 3. Memory Hierarchy and Addressing
-
-## 3.1 Tier Roles
-- HBM:
-  - runtime KV hot pages
-  - activation tensors
-  - routing metadata cache
-- HBF:
-  - dense/expert model weights (RO)
-  - shared precomputed KV chunks (RO)
-  - cold KV spill
-
-## 3.2 Unified Address Space
-A.F.O는 prefix decode 방식의 unified physical map을 사용한다.
-
+## 3.2 Dataflow Contract
 \[
-\text{target}(A)=
-\begin{cases}
-\text{HBF}, & A[51:48]\in\{0,1,2,3\}\\
-\text{HBM}, & A[51:48]\in\{8,9,A,B\}\\
-\text{SRAM}, & A[51:48]=F\\
-\text{FAULT}, & \text{otherwise}
-\end{cases}
+\text{HBM/HBF} \rightarrow \text{Bridge} \rightarrow \text{SRAM} \rightarrow \text{Compute}
 \]
 
-## 3.3 SRAM Partition
-- WEIGHT\_BUF\_A/B
-- KV\_BUF\_A/B
-- ACT\_RING
-- META\_BUF
-- LHB (Latency Hiding Buffer)
+Shared KV attention은 query batch를 aggregate하여 GEMM화하고, unique KV attention은 per-request GEMV 성격으로 유지한다. 이 분리를 통해 reuse 높은 경로를 compute-bound로 이동시킨다.
 
-Double buffering과 emergency LHB refill을 결합해 prefetch miss의 직접 stall 전파를 방지한다.
-
----
-
-## 4. MoSKA + H3 Integration
-
-## 4.1 Shared/Unique KV Separation
-각 query에 대해 attention 입력을 다음으로 분해한다.
+## 4. Analytical Model and Traceability
+수식은 설명용이 아니라 결과와 직접 연결된다.
 
 \[
-\mathrm{Attn}(Q, K, V) = \mathrm{Fuse}\left(
-\underbrace{\mathrm{Attn}_{\text{shared}}(Q, K_s, V_s)}_{\text{batched GEMM}},
-\underbrace{\mathrm{Attn}_{\text{unique}}(Q, K_u, V_u)}_{\text{GEMV-like}}
-\right)
-\]
-
-Shared KV는 chunk catalog에서 top-k routing으로 선택되고, 동일 chunk signature를 갖는 요청들을 모아 GEMM 타일로 실행한다.
-
-## 4.2 Chunk Routing
-MoE-style router는 query embedding과 chunk centroid 간 유사도를 계산한다.
-
-\[
-\mathcal{C}_{top-k}(q)=\operatorname{TopK}_{c\in\mathcal{C}}
-\left(\frac{q\cdot e_c}{\|q\|\|e_c\|}\right)
-\]
-
-여기서 \(e_c\)는 chunk \(c\)의 대표 임베딩이다.
-
-## 4.3 Tiered Placement
-- \(K_s,V_s\): HBF 저장, hot subset은 SRAM/HBM mirror
-- \(K_u,V_u\): HBM append arena
-
----
-
-## 5. Layer Pipeline and Prefetch
-
-## 5.1 Overlap Schedule
-Layer \(N\) 계산 중 동시에 Layer \(N+1\) 데이터를 선적재한다.
-
-1. weight tile prefetch (HBF→SRAM-B)
-2. shared KV chunk prefetch (HBF/HBM→SRAM-B)
-3. runtime KV page prefetch (HBM→SRAM-B)
-4. routing metadata prefetch (HBM→META-B)
-
-다음 레이어 시작 시 B를 소비하고 A를 refill한다.
-
-## 5.2 Timing Model
-레이어 시간은 다음과 같이 모델링한다.
-
-\[
-T_{layer}=\max(T_{compute}, T_{mem}) + T_{router}
+T_{layer}=\max(T_{compute}, T_{mem})+T_{router} \tag{1}
 \]
 
 \[
-T_{mem}=\max\left(\frac{B_{hbm}}{BW_{hbm}},\;\frac{B_{hbf}}{BW_{hbf}}+\Delta_{miss},\;\frac{B_{bridge}}{BW_{bridge}}\right)
+T_{mem}=\max\left(\frac{B_{hbm}}{BW_{hbm}},\frac{B_{hbf}}{BW_{hbf}}+\Delta_{miss},\frac{B_{bridge}}{BW_{bridge}}\right) \tag{2}
 \]
 
 \[
-\Delta_{miss}= (1-p_{pref})\cdot(L_{hbf}+\alpha\cdot\frac{B_{hbf}}{BW_{hbf}})
-\]
-
----
-
-## 6. Detailed 3D Figure Explanation
-
-## 6.1 Chip-level 3D Figure
-`fig_chip_3d_annotated`는 다음을 동시에 표시한다.
-1. Layer-1 compute floorplan (CPU/GPU/NPU/SRAM)
-2. Layer-2 nested rectangular ring placement (inner HBM, outer HBF)
-3. silicon bridge slab
-4. data critical path callout
-5. latency hiding buffer 역할
-
-각 색상 규칙:
-- 파랑: compute die/CPU
-- 보라: GPU-SIMT
-- 주황: NPU/HBF
-- 청록: SRAM/KV staging
-- 녹색: HBM
-- 갈색: bridge
-
-## 6.2 System-level 3D Figure
-`fig_system_3d_annotated`는 칩을 포함한 전체 하드웨어를 보여준다.
-1. main board
-2. A.F.O package and socket
-3. VRM phase array
-4. heatsink + fan
-5. CXL/PCIe extension slots
-6. host-side memory modules
-
-이 피겨는 연구자뿐 아니라 시스템 엔지니어/투자자 관점에서도 병목 위치(전력, 열, 인터커넥트)를 직관적으로 읽을 수 있게 설계했다.
-
----
-
-## 7. Performance and Power Modeling
-
-## 7.1 Throughput
-\[
-\mathrm{TPS}=\frac{B}{\sum_{l=1}^{L} T_{layer}^{(l)}}
-\]
-
-여기서 \(B\)는 decode batch size, \(L\)은 layer 수다.
-
-## 7.2 Power
-\[
-P_{total}=P_{compute}+P_{hbm}+P_{hbf}+P_{sram}+P_{bridge}
+\Delta_{miss}=(1-p_{pref})(L_{hbf}+\alpha\cdot B_{hbf}/BW_{hbf}) \tag{3}
 \]
 
 \[
-P_{compute}=P^{peak}_{compute}\cdot U_{compute}
-\]
-\[
-P_{hbm}=P^{peak}_{hbm}\cdot U_{hbm},\quad
-P_{hbf}=P^{peak}_{hbf}\cdot U_{hbf}
+TPS=\frac{B}{\sum_{l=1}^{L}T_{layer}^{(l)}} \tag{4}
 \]
 
-## 7.3 Throughput per Watt
-\[
-\mathrm{TPW}=\frac{\mathrm{TPS}}{P_{total}}
-\]
+Equation-to-metric 매핑:
+- (2),(3) -> `hbf_miss_penalty_ms_total`, `bridge_contention_ms_total`
+- (1) -> `overlap_efficiency`, `latency_p99_ms`
+- (4) -> `tokens_per_sec`
 
----
+검증 경로:
+- `results/tables/simulator_sanity_checks.md`
+- `results/summary/causal_chain_analysis.md`
 
-## 8. Experimental Protocol
+## 5. Experimental Design (Reviewer-Critical)
+## 5.1 Fairness Contract
+모든 baseline은 아래 항목을 동일하게 고정한다.
+- workload: `batch_size`, `context_len`, `kv_chunk_size_kb`
+- capacity: `hbm_capacity_gb`, `hbf_capacity_gb`, `sram_capacity_mb`
+- bandwidth/latency: `hbm_bw_gbs`, `hbf_bw_gbs`, `bridge_bw_gbs`, `hbf_latency_us`
 
-## 8.1 Baselines
-1. HBM-only GPU baseline
-2. MoSKA-only baseline
-3. H3-only baseline
-4. Apple-like UMA baseline
+오직 정책/메커니즘 변수만 변경한다.
+- `shared_kv_ratio`, `weight_hbf_fraction`, `prefetch_accuracy`, `routing_diversity`, `matrix_efficiency`, `lhb_enable`, `prefetch_depth`
 
-## 8.2 Sweeps
-1. Batch size scaling
-2. Context length scaling
-3. Number of experts scaling
-4. KV chunk size sweep
-5. HBF usage ratio sweep
-6. Prefetch accuracy sweep
-7. LHB on/off ablation
+증빙:
+- `results/tables/baseline_fairness.md`
 
-## 8.3 Metrics
-- tokens/sec
-- latency(ms/token)
-- HBM/HBF/bridge utilization
-- SRAM hit ratio
-- memory bottleneck %
-- stall ratio
-- throughput per watt
+## 5.2 Simulator Trust Validation
+- Anchor checks: AFO vs HBM-only 상대 성능/지연 관계
+- Trend checks: bridge BW/latency, prefetch/overlap, shared KV/throughput 방향성 검증
+- Model-link checks: `model_error_pct` 평균 bound
 
----
+증빙:
+- `results/tables/simulator_sanity_checks.md` (현재 `7 PASS / 0 FAIL`)
 
-## 9. Hardware/RTL Implementation Notes
+## 5.3 Stress and Tail Protocol
+- stress scenarios: `nominal`, `peak_traffic`, `bridge_saturation`, `thermal_hot`, `worst_case_tail`
+- tail metrics: `latency_p99_ms`, `latency_p999_ms`, `latency_max_ms`, `tail_ratio_p99_p50`
+- root-cause metrics: `bridge_contention_ms_total`, `hbf_miss_penalty_ms_total`, bottleneck attribution
 
-1. Address decoder는 prefix decode와 fault gating을 통해 invalid prefetch issue를 차단
-2. DMA queue는 enqueue/dequeue 동시 처리에서 qcount 일관성 보장
-3. TB assertion은 descriptor order/주소/레이어/fault/no-enqueue-on-invalid를 검증
-4. Verilator trace로 VCD 파형을 생성해 스케줄 동작을 파형 레벨로 검토 가능
+## 6. Results and Interpretation
+## 6.1 Baseline Snapshot
+`results/tables/baseline_comparison.md` 기준:
+- AFO_full: 12.74 tok/s, p99 80.004 ms
+- HBM_only_GPU: 12.30 tok/s, p99 82.918 ms
 
----
+## 6.2 Causal Chain (Mechanism -> Outcome)
+`results/summary/causal_chain_analysis.md`:
+1. Prefetch accuracy 0.60 -> 0.95
+- overlap_efficiency +0.0108
+- p99 latency -6.966 ms
 
-## 10. 3D Interactive Delivery for GitHub
-GitHub에서 마우스로 회전하며 볼 수 있도록 OBJ/STL를 함께 제공한다.
+2. shared KV ratio 0.30 -> 0.85
+- shared reuse +0.2471
+- batch_gain +1.0515
 
-- Chip package model
-  - `thesis/docs/assets/models/afo_chip_package_3d.obj`
-  - `thesis/docs/assets/models/afo_chip_package_3d.stl`
+3. bridge BW 3200 -> 6400 GB/s
+- bridge contention -2731.645 ms
+- p99 latency -56.023 ms
 
-- Full hardware system model
-  - `thesis/docs/assets/models/afo_hardware_system_3d.obj`
-  - `thesis/docs/assets/models/afo_hardware_system_3d.stl`
+핵심 해석:
+- KV reuse 증가 -> batch_gain 증가 -> GEMM 경로 유효성 증가
+- prefetch 정확도 증가 -> 오버랩 증가 -> 지연 노출 감소
+- bridge BW 증가 -> contention 체류 시간 감소 -> tail 완화
 
-또한 로컬/웹에서 더 자세한 인터랙션을 위해 Three.js 뷰어 페이지를 제공한다.
+## 6.3 Tail Latency Root Cause
+`results/summary/tail_latency_root_cause.md`:
+- worst-case tail: p99 804.009 ms
+- dominant cause: bridge saturation
+- nominal 대비 bridge contention +130174.152 ms
 
----
+이 결과는 "평균 성능"만으로는 시스템 안정성을 평가할 수 없음을 보여준다.
 
-## 11. Limitations
-1. 현재 모델은 analytical + cycle-inspired 하이브리드이며 full NAND firmware model은 미포함
-2. router ANN microarchitecture는 기능 모델 중심
-3. thermal transient 및 package warpage 연동은 future work
+## 6.4 Thermal Coupling
+`results/summary/thermal_impact_analysis.md`:
+- thermal hotspot에서 throttle 비율 상승
+- throughput 하락 및 p99 증가 동반
 
----
+이는 3D 적층 구조에서 thermal 변수가 큐/타이밍을 직접 흔드는 1차 요인임을 시사한다.
 
-## 12. Conclusion
-A.F.O는 단순 메모리 증설이 아니라, **shared/unique KV 계산 경로 분할 + H3 계층 배치 + 선적재 파이프라인**을 묶어 메모리 병목을 연산 스케줄링 문제로 재정의한 구조다. 본 문서와 코드/모델/3D 자산은 논문 제출과 오픈소스 공개를 동시에 만족하도록 구성되어 있다.
+## 7. Related Work Gap (What Fails and Why)
+- MoSKA: shared/unique KV 분리라는 중요한 연산 아이디어 제공, 그러나 물리 tier 강제 및 bridge-constrained overlap 계약까지는 확장되지 않음
+- H3: HBM+HBF 용량-비용 구조 제시, 그러나 burst 상황의 deterministic overlap 보장 메커니즘 부재
+- vLLM/PagedAttention: allocator/runtime 효율 우수, 하지만 3D tier-local execution contract 자체를 강제하지 않음
+- FlashAttention: kernel-level 효율 우수, 하지만 multi-tier placement + prefetch contract까지 포함하지 않음
 
----
+즉 기존 연구는 component를 최적화하고, A.F.O는 cross-tier contract를 강제한다.
 
-## References (selected)
-상세 BibTeX는 `thesis/paper/references.bib` 참조.
+## 8. Implementation Feasibility
+- SW/analytical prototype: 완료 (`sim/`, `experiments/scripts/`)
+- runtime mock: 진행 (`runtime/`)
+- RTL critical path 블록: 주소 디코더, DMA, prefetch, SRAM buffer 중심 구현 계획
+- FPGA/ASIC flow: OpenROAD 실험 단계로 확장 가능
 
-1. Vaswani et al., "Attention Is All You Need," NeurIPS 2017.
-2. Dao et al., "FlashAttention," NeurIPS 2022.
-3. Lepikhin et al., "GShard," ICLR 2021.
-4. Fedus et al., "Switch Transformers," JMLR 2022.
-5. Shoeybi et al., "Megatron-LM," SC 2019.
-6. Narayanan et al., "Efficient Large-Scale LM Training on GPU Clusters," SC 2021.
-7. Kwon et al., "PagedAttention with vLLM," SOSP 2023.
-8. Kim et al., "A Neural Cache Model for Long-Context Serving" (context systems references).
-9. Ha, Kim, Kim, "H3: Hybrid Architecture Using HBM and HBF," IEEE CAL 2026.
-10. Rhee et al., "MoSKA: Mixture of Shared KV Attention," IEEE CAL 2025.
+## 9. Limitations (Strong Form)
+1. **Not silicon-ready**
+- post-layout timing closure / package-level signoff 없음
+
+2. **Not production-grade**
+- vendor kernel + serving stack 통합 검증 미완료
+
+3. **Policy-level validation only**
+- simulator는 cycle-inspired 근사 모델이며 cycle-exact RTL 모델이 아님
+
+4. **Thermal model abstraction**
+- RC 수준 thermal coupling 모델로 CFD/FEM 기반 정밀 열해석은 future work
+
+## 10. Conclusion
+A.F.O의 신규성은 "무엇을 합쳤는가"가 아니라 "무엇을 강제했는가"에 있다. 본 설계는 memory tier, routing descriptor, prefetch schedule, SRAM staging을 단일 계약으로 묶어 finite bandwidth 환경에서 overlap을 결정론적으로 유지하도록 설계되었다. 본 저장소는 그 계약이 실험적으로 어떻게 검증되는지 재현 가능한 형태로 제공한다.
+
+## References (Selected)
+1. Vaswani et al., Attention Is All You Need, NeurIPS 2017.
+2. Dao et al., FlashAttention, NeurIPS 2022.
+3. Kwon et al., PagedAttention / vLLM, SOSP 2023.
+4. Ha et al., H3: Hybrid Architecture Using HBM and HBF, IEEE CAL 2026.
+5. Rhee et al., MoSKA: Mixture of Shared KV Attention, IEEE CAL 2025.

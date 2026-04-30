@@ -8,8 +8,8 @@
 
 ## 구성
 - `docs/` : 읽기 쉬운 문서형(설명/도해/3D 링크)
-- `paper/` : 아카이브 제출용 LaTeX 원고 + BibTeX
 - `scripts/` : 3D 모델/피겨 생성 스크립트
+- `../paper/afo_paper_draft.md` : 현재 공개 저장소용 연구 원고 초안
 
 ## 핵심 문서
 1. [Thesis Manuscript](./docs/thesis_manuscript.md)
@@ -30,15 +30,9 @@ python3 -m http.server 18080
 # http://localhost:18080 접속
 ```
 
-## 논문 PDF 빌드
-```bash
-cd thesis/paper
-./build_paper.sh
-```
-
-- 글꼴: Times 계열(`newtxtext/newtxmath`)
-- 스타일: `IEEEtran` 기반 (아카이브 업로드 친화)
-- 참고: 현재 환경에 `pdflatex`/`latexmk`가 없으면 PDF는 빌드되지 않으며, 소스는 그대로 제출 가능
+## 논문 원고
+- 공개 원고(Markdown): `../paper/afo_paper_draft.md`
+- 상세 본문(문서형): `docs/thesis_manuscript.md`
 
 ## 피겨/모델 재생성
 ```bash

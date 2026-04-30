@@ -1,185 +1,152 @@
-# A.F.O (All For One): AC/DC 3D Silicon for MoSKA + H3 LLM Inference
+# A.F.O: Enforcing Cross-Tier Execution Contracts for 3D HBM+HBF LLM Inference Under Finite Bridge Bandwidth
 
 ## 1. Abstract
-A.F.O is a 3D-integrated inference chip architecture that combines (i) Apple-like unified compute, (ii) MoSKA shared/unique KV attention execution, and (iii) H3-style HBM+HBF hybrid memory tiering. The architecture targets long-context, decode-heavy large language model inference where runtime KV growth and memory bandwidth pressure dominate performance. A.F.O places read-mostly model weights and shared KV in HBF, runtime/hot KV in HBM, and layer-critical tiles in banked on-die SRAM with double-buffering and a latency-hiding buffer. The design introduces an expert-style chunk routing flow to turn shared KV processing from memory-bound GEMV streams into batched GEMM kernels. This report provides an implementable roadmap from simulator to RTL/FPGA/ASIC experiments, including address maps, module interfaces, runtime APIs, and validation methodology.
+This work presents A.F.O (All For One), a mechanism-driven 3D inference architecture for long-context LLM serving. A.F.O is not presented as a loose composition of MoSKA, H3, and unified compute; it enforces three contracts: (i) tier-local memory semantics (runtime-hot mutable state in HBM, read-mostly state in HBF), (ii) descriptor-coupled overlap (Layer-N compute with Layer-(N+1) route-aware prefetch), and (iii) SRAM A/B + latency-hiding replay invariants under finite bridge bandwidth. We validate architectural feasibility with multi-seed cycle-inspired simulation, stress scenarios, fairness-constrained baselines, and model-to-metric traceability. Results show consistent directional gains and explicit tail-risk exposure under burst traffic and thermal coupling. The repository targets policy-level validation, not tape-out claims.
 
-## 2. Introduction
-Long-context LLM serving suffers from two coupled constraints:
-1. KV cache growth scales with active requests and context length.
-2. Decode attention becomes memory-bound with low arithmetic intensity.
+## 2. Problem Statement
+Long-context decode is constrained by memory traffic rather than peak FLOPS. Two failures dominate in existing systems:
+1. Runtime KV growth increases latency variance in multi-tenant service.
+2. Memory tiers are often treated as capacity pools, not execution contracts.
 
-Recent work suggests complementary paths:
-- H3: pair high-bandwidth flash (HBF) with HBM to improve capacity efficiency for read-heavy inference.
-- MoSKA: separate shared and unique KV, batch shared operations to shift toward compute-bound GEMM.
+A.F.O hypothesis:
+- If tier semantics are enforced physically and the prefetch schedule is tied to routing descriptors, then overlap remains deterministic enough to control tail latency under finite bridge bandwidth.
 
-A.F.O unifies both principles in one hardware/software stack. Instead of treating memory as flat HBM, it introduces explicit tier-aware placement and prefetch policy to keep compute engines fed while minimizing latency penalties from HBF.
+## 3. Contributions
+1. Contracted 3D topology model:
+- Top compute die, bottom ringed memory tier (inner HBM rectangular ring, outer HBF ring).
+2. Mechanism-level execution design:
+- Shared/unique KV split + route-aware chunk staging + descriptor-coupled prefetch.
+3. Fairness-constrained evaluation protocol:
+- Baselines share identical workload/capacity/BW constraints, only policy knobs vary.
+4. Trust and traceability package:
+- sanity checks, causal-chain report, tail root-cause, thermal impact report, model-error bounds.
 
-## 3. Background (MoSKA + H3)
-### 3.1 H3 implications for chip design
-H3 demonstrates that HBF provides much larger capacity with high bandwidth, but suffers higher access latency than HBM. Therefore, data placement must be semantic:
-- Immutable, read-mostly tensors -> HBF
-- latency-sensitive, write-heavy state -> HBM
+## 4. Why Prior Systems Are Not Enough
+### 4.1 Component-optimized systems
+- FlashAttention-like kernels improve local attention kernels but do not enforce cross-tier placement.
+- vLLM-like paged KV improves allocator/runtime behavior but does not guarantee physical-tier execution semantics.
 
-### 3.2 MoSKA implications for chip design
-MoSKA differentiates:
-- Unique KV (request-private)
-- Shared KV (reused across many requests)
+### 4.2 Tiering-only systems
+- H3-style tiering provides capacity economics, but can still fail under burst because bridge contention and miss exposure are not contract-driven.
 
-Shared KV can be grouped and executed in a batched GEMM form, substantially improving utilization compared to naive GEMV per request.
+### 4.3 MoSKA-only systems
+- Shared/unique KV separation improves reuse, but without tier-local contracts and deterministic overlap rules, multi-tenant burst can still trigger unstable tails.
 
-## 4. A.F.O Architecture
-### 4.1 3D package
-```text
-Layer 2 (Memory): HBM3 x8 + HBF x2 + H3 Address Router
-      || Silicon Bridge (VN0/VN1/VN2 QoS virtual networks)
-Layer 1 (Compute): CPU, GPU-like SIMT, NPU matrix cores,
-                   Shared/Unique KV engines, DMA/Prefetch,
-                   KV scheduler, MoE router, 768MB banked SRAM
-```
+## 5. Architecture
+### 5.1 Physical contract
+- Layer1 (top): compute (CPU + SIMT + matrix + SRAM + router/scheduler).
+- Layer2 (bottom): memory rings (HBM inner, HBF outer).
+- Silicon bridge fabric: high-bandwidth but finite and contention-prone.
 
-### 4.2 Compute die microarchitecture
-- CPU cluster: runtime orchestration, MMIO, scheduling decisions
-- GPU-like SIMT array: elementwise and sparse operations
-- Matrix accelerator: GEMM/FFN/attention tiles
-- Shared KV attention engine: batched shared chunks
-- Unique KV attention engine: low-latency per-request attention
-- MoE router hardware assist: top-k chunk expert selection
-- DMA + prefetch engines: layer lookahead data movement
-- Unified memory controller: HBM/HBF/SRAM routing and QoS
+### 5.2 Memory contract
+- HBM: runtime KV, activations, routing metadata, mutable hot state.
+- HBF: model weights, shared KV catalog, cold chunks, read-mostly state.
 
-## 5. Memory Hierarchy Design
-### 5.1 H3 mapping
-- HBM:
-  - runtime KV
-  - activations
-  - hot metadata and hot shared chunk replicas
-- HBF:
-  - dense and expert weights (RO)
-  - shared precomputed KV library (RO)
-  - cold KV spill
+### 5.3 Execution contract
+- Route-aware chunk selection determines prefetch descriptors.
+- During Layer N, prefetch Layer N+1 weights/chunks/metadata.
+- SRAM A/B swap + LHB replay is mandatory for miss containment.
 
-### 5.2 Unified address map
-Prefix-based decode:
-- `0x0-0x3`: HBF
-- `0x8-0xB`: HBM
-- `0xF`: SRAM aperture
+This is critical because it converts a best-effort prefetch policy into a deterministic scheduling contract.
 
-### 5.3 SRAM organization
-- 32 banks, total 768MB
-- ping-pong weight buffers (A/B)
-- ping-pong KV buffers (A/B)
-- activation ring buffer
-- metadata bank
-- latency hiding buffer (LHB)
+## 6. Equations and Observable Mapping
+Equation (1):
+\[
+T_{layer}=\max(T_{compute}, T_{mem}) + T_{router}
+\]
+Equation (2):
+\[
+T_{mem}=\max\left(\frac{B_{hbm}}{BW_{hbm}},\;\frac{B_{hbf}}{BW_{hbf}}+\Delta_{miss},\;\frac{B_{bridge}}{BW_{bridge}}\right)
+\]
+Equation (3):
+\[
+\Delta_{miss}=(1-p_{pref})(L_{hbf}+\alpha\cdot B_{hbf}/BW_{hbf})
+\]
+Equation (4):
+\[
+\mathrm{TPS}=\frac{B}{\sum_{l=1}^{L}T_{layer}^{(l)}}
+\]
 
-## 6. KV Cache Strategy
-### 6.1 Chunk model
-Shared KV stored as chunk tensor units:
-- tuple: `(layer, expert_id, head_group, token_range, chunk_id)`
-- size: 64-256KB preferred window
+Metric bindings:
+- Eq. (2)-(3) -> `bridge_contention_ms_total`, `hbf_miss_penalty_ms_total`.
+- Eq. (1) -> `overlap_efficiency`, `latency_p99_ms`.
+- Eq. (4) -> `tokens_per_sec`.
 
-Unique KV stored as append-only runtime pages in HBM.
+Equation-to-result consistency is validated in `results/tables/simulator_sanity_checks.md` and `results/summary/causal_chain_analysis.md`.
 
-### 6.2 Layer overlap
-At Layer N:
-- execute attention + FFN
-- prefetch Layer N+1 weights/chunks/metadata to B-buffers
+## 7. Experimental Method
+### 7.1 Fairness policy
+All baselines share identical:
+- batch/context/chunk
+- HBM/HBF/SRAM capacity
+- HBM/HBF/bridge bandwidth and HBF latency
 
-At Layer N+1:
-- consume prefetched B-buffers
-- refill A-buffers for N+2
+Only mechanism knobs vary. Full disclosure: `results/tables/baseline_fairness.md`.
 
-### 6.3 MoE-style routing
-- query embedding -> top-k chunk experts
-- chunk selection confidence controls dynamic top-k
-- low-confidence paths increase prefetch depth and reserve LHB
+### 7.2 Baselines
+- AFO_full
+- HBM_only_GPU
+- MoSKA_only
+- H3_only
+- Apple_like_UMA
+- vLLM_like / FlashAttn_like / TensorRTLLM_like (policy-level synthetic)
 
-## 7. Software-Hardware Co-design
-### 7.1 Runtime responsibilities
-- memory placement planner (HBM vs HBF)
-- KV lifecycle manager (hot/warm/cold)
-- prefetch planner (layer+router aware)
-- execution scheduler (compute/memory overlap)
+### 7.3 Stress and sensitivity
+- batch/context/experts/chunk/prefetch/shared-KV/sram/hbf-latency/bridge-bw sweeps
+- burst/bridge/thermal worst-case scenarios
 
-### 7.2 Compiler responsibilities
-- split attention into shared/unique paths
-- aggregate shared queries for GEMM
-- inject prefetch pseudo-ops
+## 8. Results
+### 8.1 Baseline comparison
+From `results/tables/baseline_comparison.md`:
+- AFO_full: 12.74 tok/s, p99 80.004 ms
+- HBM_only_GPU: 12.30 tok/s, p99 82.918 ms
 
-### 7.3 Hardware assist boundaries
-- router accel for top-k lookup
-- prefetch assist FSM for descriptor emission
-- perf counter block for adaptive scheduling feedback
+### 8.2 Causal chain validation
+From `results/summary/causal_chain_analysis.md`:
+- prefetch 0.60 -> 0.95: overlap +0.0108, p99 -6.966 ms
+- shared KV ratio 0.30 -> 0.85: reuse +0.2471, batch_gain +1.0515
+- bridge BW 3200 -> 6400 GB/s: p99 -56.023 ms, contention -2731.645 ms
 
-## 8. Experimental Setup
-### 8.1 Baselines
-- HBM-only GPU
-- MoSKA-only (no HBF)
-- H3-only (no shared-KV batching)
-- Apple-like UMA without chunk routing
+Equation (3) predicts lower miss exposure as prefetch rises, which matches the observed p99 reduction in the prefetch sweep.
 
-### 8.2 Sweeps
-- batch size
-- context length
-- expert count
-- KV chunk size
-- HBF share ratio
-- prefetch accuracy
-- LHB on/off
+### 8.3 Tail behavior
+From `results/summary/tail_latency_root_cause.md`:
+- worst-case tail p99: 804.009 ms
+- dominant cause: bridge saturation (100% bottleneck attribution in that scenario)
 
-### 8.3 Metrics
-- tokens/sec, ms/token
-- HBM/HBF/bridge utilization
-- SRAM hit ratio
-- stall ratio and memory bottleneck %
-- power and throughput/watt
+This is critical because average latency alone hides service-breaking burst behavior.
 
-## 9. Results (Synthetic Prototype)
-Synthetic runs from the current analytical model show:
-- Baseline comparison (`results/tables/baseline_comparison.md`):
-  - AFO_full: 16.63 tokens/sec, 60.14 ms/token
-  - HBM_only_GPU: 14.47 tokens/sec, 69.13 ms/token
-  - MoSKA_only: 15.68 tokens/sec, 63.77 ms/token
-  - H3_only: 12.91 tokens/sec, 77.47 ms/token
-- Prefetch sweep:
-  - prefetch accuracy 0.60 -> 14.05 tokens/sec
-  - prefetch accuracy 0.95 -> 16.50 tokens/sec
-- Context sweep:
-  - 1K context -> 16.13 tokens/sec
-  - 16K context -> 15.96 tokens/sec
-- KV chunk sweep:
-  - 64KB chunk is best in this prototype model, larger chunks show overfetch penalties
+### 8.4 Thermal coupling
+From `results/summary/thermal_impact_analysis.md`:
+- thermal_hot and worst_case_tail reach 125 C peak in this policy model
+- throughput degrades with thermal throttling and queue amplification
 
-Representative result artifacts are generated under:
-- `results/sim/*.csv`
-- `results/plots/*.svg`
-- `results/plots/*_summary.txt`
+## 9. Discussion
+A.F.O does not claim that any single primitive is new. The novelty is enforceable cross-tier behavior under constrained interconnect.
+- Not composition, but enforced mechanism.
+- Not best-effort overlap, but descriptor-coupled overlap.
+- Not memory pooling, but tier-local execution semantics.
 
-## 10. Discussion
-A.F.O gains come from coordinated co-design, not a single component:
-1. Capacity efficiency from HBF placement
-2. Utilization uplift from shared-KV GEMM batching
-3. Latency control from SRAM staging and LHB emergency refill
+## 10. Limitations
+- Not silicon-ready: no post-layout timing closure, no package-signoff thermal simulation.
+- Not production-grade runtime: no full kernel-level integration with vendor stacks.
+- Policy-level validation only: simulator is cycle-inspired first-order, not cycle-exact microarchitectural RTL.
 
-Failure modes:
-- high routing entropy -> larger active chunk set
-- bridge congestion -> memory/compute overlap collapse
-- insufficient SRAM partitioning -> prefetch eviction thrash
+## 11. Feasibility Roadmap
+- Phase 0: architecture specification
+- Phase 1: analytical simulator
+- Phase 2: runtime mock
+- Phase 3: RTL critical-path blocks
+- Phase 4: Verilator checks
+- Phase 5: FPGA simplification
+- Phase 6: OpenROAD ASIC exploration
 
-## 11. Limitations
-- analytical simulator uses first-order latency/bandwidth approximations
-- no full NAND endurance and firmware effects in current model
-- router hardware cost modeled abstractly before full RTL/ANN implementation
+## 12. Conclusion
+A.F.O should be understood as a mechanism-enforcement architecture: it binds placement, routing, and prefetch into a cross-tier execution contract so that overlap remains stable under finite bridge bandwidth. Prior works optimize components; A.F.O enforces system-level contracts.
 
-## 12. Future Work
-- cycle-accurate bridge arbitration model
-- quantized router index accelerator RTL
-- real kernel trace integration from serving runtime
-- thermal-aware 3D floorplan optimization
-
-## 13. Conclusion
-A.F.O provides a concrete path to build a practical long-context LLM inference chip by fusing MoSKA execution strategy with H3 memory tiering and a unified compute die. The architecture is implementation-oriented: explicit memory map, prefetch policies, block interfaces, and staged prototype milestones are defined so development can begin immediately from simulator and RTL-critical path blocks.
-
-## References
-1. Minho Ha, Euiseok Kim, Hoshik Kim, "H3: Hybrid Architecture Using High Bandwidth Memory and High Bandwidth Flash for Cost-Efficient LLM Inference," IEEE Computer Architecture Letters, 2026, doi:10.1109/LCA.2026.3660969.
-2. Myunghyun Rhee et al., "MoSKA: Mixture of Shared KV Attention for Efficient Long-Sequence LLM Inference," IEEE Computer Architecture Letters, 2025, doi:10.1109/LCA.2025.3627539.
+## 13. References (Core)
+1. Ha et al., H3 (IEEE CAL, 2026).
+2. Rhee et al., MoSKA (IEEE CAL, 2025).
+3. Vaswani et al., Attention Is All You Need (NeurIPS, 2017).
+4. Dao et al., FlashAttention (NeurIPS, 2022).
+5. Kwon et al., PagedAttention/vLLM (SOSP, 2023).

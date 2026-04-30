@@ -1,8 +1,8 @@
 # A.F.O Thesis Docs
 
 Topology convention used across manuscript/figures:
-- Layer 1 (bottom): compute die
-- Layer 2 (top): inner HBM rectangular ring + outer HBF rectangular ring
+- Layer 1 (top): compute die
+- Layer 2 (bottom): inner HBM rectangular ring + outer HBF rectangular ring
 
 - Main manuscript: [thesis_manuscript.md](./thesis_manuscript.md)
 - Figure atlas: [figure_atlas.md](./figure_atlas.md)
