@@ -35,6 +35,8 @@ SWEEPS: list[tuple[str, list[float]]] = [
     ("multi_tenant_users", [32, 64, 128, 256, 384]),
     ("traffic_burst_factor", [1.0, 1.5, 2.0, 2.5, 3.0]),
     ("bridge_bw_gbs", [3200, 4000, 4800, 5600, 6400]),
+    ("tsv_uplink_bw_gbs", [2800, 3600, 4200, 5000, 5800]),
+    ("base_die_xbar_bw_gbs", [4200, 5000, 5600, 6200, 6800]),
 ]
 
 STRESS_SCENARIOS: list[tuple[str, dict]] = [
@@ -70,6 +72,21 @@ STRESS_SCENARIOS: list[tuple[str, dict]] = [
             "bridge_bw_gbs": 3600.0,
             "thermal_hotspot_gain": 1.2,
             "ambient_temp_c": 40.0,
+        },
+    ),
+    (
+        "tsv_neck_pressure",
+        {
+            "multi_tenant_users": 320,
+            "traffic_burst_factor": 2.4,
+            "burst_probability": 0.18,
+            "tail_jitter_sigma": 0.13,
+            "bridge_bw_gbs": 4200.0,
+            "tsv_uplink_bw_gbs": 3000.0,
+            "tsv_lane_util_limit": 0.82,
+            "periphery_to_center_hops": 8,
+            "thermal_hotspot_gain": 1.25,
+            "ambient_temp_c": 41.0,
         },
     ),
     (
@@ -120,7 +137,11 @@ PRIMARY_METRICS = [
     "hbm_util",
     "hbf_util",
     "bridge_util",
+    "tsv_util",
+    "base_die_util",
     "bridge_contention_ms_total",
+    "tsv_contention_ms_total",
+    "base_route_contention_ms_total",
     "hbf_miss_penalty_ms_total",
     "burst_event_ratio",
     "shared_kv_reuse_ratio",
@@ -129,6 +150,7 @@ PRIMARY_METRICS = [
     "bottleneck_hbm_pct",
     "bottleneck_hbf_pct",
     "bottleneck_bridge_pct",
+    "bottleneck_tsv_pct",
     "bottleneck_router_pct",
     "thermal_peak_c",
     "thermal_avg_c",
@@ -316,7 +338,7 @@ def write_parameter_snapshot(cfg: AFOConfig, seeds: list[int], num_tokens: int) 
         "stress_scenarios": [{"scenario": name, "overrides": ov} for name, ov in STRESS_SCENARIOS],
         "seeds": seeds,
         "num_tokens": num_tokens,
-        "notes": "Synthetic analytical simulator; values are for architecture trend analysis and reproducibility.",
+        "notes": "Synthetic analytical simulator with Active Base Die + TSV neck modeling; values are for architecture trend analysis and reproducibility.",
     }
     SIM_OUT.mkdir(parents=True, exist_ok=True)
     with (SIM_OUT / "parameter_snapshot.json").open("w", encoding="utf-8") as f:

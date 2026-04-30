@@ -2,6 +2,7 @@
 """
 A.F.O analytical simulator (MoSKA + H3).
 - Models HBM/HBF/bridge/SRAM constraints
+- Models Active Base Die lateral route + central TSV neck constraints
 - Approximates token decode throughput, stall, utilization, power
 """
 
@@ -24,11 +25,28 @@ class AFOConfig:
     # Physical package convention (fixed by A.F.O spec)
     layer1_role: str = "compute_top"
     layer2_role: str = "memory_bottom"
+    package_topology: str = "active_base_3p5d"
+    compute_bonding: str = "hybrid_3d_tsv"
+    memory_ring_mount: str = "periphery_2p5d_microbump"
     # Layer-2 rectangular ring topology:
     # inner HBM ring fully surrounds Layer-1 compute footprint,
     # and outer HBF ring surrounds HBM ring.
     hbm_ring_coverage: float = 1.0
     hbf_outer_ring_coverage: float = 1.0
+
+    # Package feasibility controls (Active Base Die + TSV neck)
+    base_die_xbar_bw_gbs: float = 5600.0
+    tsv_uplink_bw_gbs: float = 4200.0
+    tsv_protocol_overhead: float = 0.10
+    tsv_lane_util_limit: float = 0.88
+    periphery_to_center_hops: int = 6
+    base_die_hop_latency_ns: float = 2.5
+    microbump_latency_ns: float = 8.0
+
+    # Geometric sanity checks for packaging narrative
+    hbm_stack_height_mm: float = 0.72
+    compute_die_thickness_mm: float = 0.12
+    periphery_ring_clearance_mm: float = 2.0
 
     model_size_gb: float = 180.0
     num_layers: int = 80
@@ -97,6 +115,35 @@ def validate_layer_convention(cfg: AFOConfig) -> None:
             "A.F.O ring topology mismatch: Layer-2 must use near-full rectangular rings "
             "(HBM inner ring around compute, HBF outer ring around HBM)."
         )
+
+
+def validate_package_feasibility(cfg: AFOConfig) -> None:
+    if cfg.package_topology != "active_base_3p5d":
+        raise ValueError(
+            "A.F.O package topology mismatch: expected package_topology=active_base_3p5d "
+            "(Active Base Die + central 3D bonding + periphery 2.5D memory ring)."
+        )
+    if cfg.compute_bonding != "hybrid_3d_tsv":
+        raise ValueError(
+            "A.F.O compute bonding mismatch: expected compute_bonding=hybrid_3d_tsv."
+        )
+    if cfg.memory_ring_mount != "periphery_2p5d_microbump":
+        raise ValueError(
+            "A.F.O memory mount mismatch: expected memory_ring_mount=periphery_2p5d_microbump."
+        )
+    if cfg.hbm_stack_height_mm <= cfg.compute_die_thickness_mm:
+        raise ValueError(
+            "A.F.O package geometry mismatch: HBM stack must be taller than compute die; "
+            "this model assumes periphery mounting on active base die."
+        )
+    if cfg.periphery_ring_clearance_mm < 0.5:
+        raise ValueError(
+            "A.F.O package clearance mismatch: periphery ring clearance must be >= 0.5mm."
+        )
+    if cfg.base_die_xbar_bw_gbs <= 0 or cfg.tsv_uplink_bw_gbs <= 0:
+        raise ValueError("A.F.O package bandwidth mismatch: base_die_xbar_bw_gbs and tsv_uplink_bw_gbs must be positive.")
+    if not (0.5 <= cfg.tsv_lane_util_limit <= 1.0):
+        raise ValueError("A.F.O package mismatch: tsv_lane_util_limit must be in [0.5, 1.0].")
 
 
 def gb_to_bytes(x: float) -> float:
@@ -212,6 +259,7 @@ def _safe_div(a: float, b: float) -> float:
 
 def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
     validate_layer_convention(cfg)
+    validate_package_feasibility(cfg)
     layer_bytes = estimate_layer_bytes(cfg)
     layer_ops = estimate_layer_ops(cfg)
 
@@ -225,6 +273,8 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
     total_hbm_bytes = 0.0
     total_hbf_bytes = 0.0
     total_bridge_bytes = 0.0
+    total_tsv_bytes = 0.0
+    total_base_route_bytes = 0.0
     sram_hit_acc = 0.0
     lhb_hit_acc = 0.0
     overlap_acc = 0.0
@@ -232,6 +282,8 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
     prefetch_cov_den = 0.0
     hbf_miss_penalty_s_total = 0.0
     bridge_contention_s_total = 0.0
+    tsv_contention_s_total = 0.0
+    base_route_contention_s_total = 0.0
     burst_events = 0
 
     # Per-token latency samples for tail analysis
@@ -244,6 +296,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
     b_hbm = 0.0
     b_hbf = 0.0
     b_bridge = 0.0
+    b_tsv = 0.0
     b_router = 0.0
 
     miss_rate = max(0.01, 1.0 - cfg.prefetch_accuracy)
@@ -252,6 +305,13 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
     ring_score = 0.5 * (cfg.hbm_ring_coverage + cfg.hbf_outer_ring_coverage)
     ring_bridge_gain = max(0.92, 1.0 - 0.10 * max(0.0, ring_score - 0.8))
     ring_hbf_latency_gain = max(0.75, 1.0 - 0.35 * max(0.0, ring_score - 0.8))
+
+    # Active Base Die path: periphery memory ring -> base-die lateral route -> central TSV neck -> compute die
+    tsv_effective_bw_gbs = cfg.tsv_uplink_bw_gbs * max(0.5, min(1.0, cfg.tsv_lane_util_limit))
+    base_hops = max(1, cfg.periphery_to_center_hops)
+    pkg_const_latency_s = (
+        cfg.base_die_hop_latency_ns * base_hops + cfg.microbump_latency_ns
+    ) * 1e-9
 
     # Shared-KV reuse and batch gain approximation
     context_chunk_factor = 1.0 + (cfg.context_len / 8192.0) * 0.5
@@ -291,9 +351,21 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
             bridge_contention = 1.0 + 0.0075 * max(0, cfg.multi_tenant_users - 32)
             bridge_contention *= burst_mult
 
+            # Active Base Die lateral route + central TSV neck contention.
+            base_route_bytes = bridge_bytes
+            tsv_bytes = bridge_bytes * (1.0 + max(0.0, cfg.tsv_protocol_overhead))
+            base_route_scale = 1.0 + 0.035 * max(0, base_hops - 1)
+            tsv_contention = 1.0 + 0.0045 * max(0, cfg.multi_tenant_users - 32)
+            tsv_contention *= (1.0 + 0.15 * max(0.0, burst_mult - 1.0))
+
             t_hbf = sec_from_bytes(hbf_bytes, cfg.hbf_bw_gbs)
             t_hbm = sec_from_bytes(hbm_bytes, cfg.hbm_bw_gbs)
             t_bridge = sec_from_bytes(bridge_bytes, cfg.bridge_bw_gbs) * bridge_contention * jitter
+            t_base_route_nominal = sec_from_bytes(base_route_bytes, cfg.base_die_xbar_bw_gbs) * base_route_scale
+            t_base_route = t_base_route_nominal * bridge_contention * jitter
+            t_tsv_nominal = sec_from_bytes(tsv_bytes, tsv_effective_bw_gbs)
+            t_tsv = t_tsv_nominal * tsv_contention * jitter
+            t_pkg_path = t_base_route + t_tsv + pkg_const_latency_s
             t_compute = layer_ops / compute_ops_per_sec
 
             lhb_absorb = 0.0
@@ -320,7 +392,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
                 t_compute *= (1.0 + throttle)
                 thermal_trace.append(thermal_c)
 
-            critical_mem = max(t_hbm, t_hbf + hbf_miss_penalty, t_bridge)
+            critical_mem = max(t_hbm, t_hbf + hbf_miss_penalty, t_bridge, t_pkg_path)
             overlap_time = max(t_compute, critical_mem) + hbf_miss_penalty
 
             sram_pressure = (
@@ -343,10 +415,14 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
             total_hbm_bytes += hbm_bytes
             total_hbf_bytes += hbf_bytes
             total_bridge_bytes += bridge_bytes
+            total_tsv_bytes += tsv_bytes
+            total_base_route_bytes += base_route_bytes
             token_time_s += layer_time
             token_stall_s += stall
             hbf_miss_penalty_s_total += hbf_miss_penalty
             bridge_contention_s_total += max(0.0, t_bridge - sec_from_bytes(bridge_bytes, cfg.bridge_bw_gbs))
+            tsv_contention_s_total += max(0.0, t_tsv - t_tsv_nominal)
+            base_route_contention_s_total += max(0.0, t_base_route - t_base_route_nominal)
 
             sram_hit_acc += sram_hit
             lhb_hit_acc += lhb_absorb
@@ -359,15 +435,28 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
             prefetch_cov_num += cfg.prefetch_accuracy * (0.85 + 0.15 * min(1.0, cfg.prefetch_depth / 2.0))
             prefetch_cov_den += 1.0
 
-            dominant = max(t_compute, t_hbm, t_hbf + hbf_miss_penalty, t_bridge, routing_overhead)
-            if dominant == t_compute:
+            dominant_bucket = max(
+                {
+                    "compute": t_compute,
+                    "hbm": t_hbm,
+                    "hbf": t_hbf + hbf_miss_penalty,
+                    "bridge": t_bridge,
+                    "tsv": t_pkg_path,
+                    "router": routing_overhead,
+                }.items(),
+                key=lambda kv: kv[1],
+            )[0]
+
+            if dominant_bucket == "compute":
                 b_compute += layer_time
-            elif dominant == t_hbm:
+            elif dominant_bucket == "hbm":
                 b_hbm += layer_time
-            elif dominant == (t_hbf + hbf_miss_penalty):
+            elif dominant_bucket == "hbf":
                 b_hbf += layer_time
-            elif dominant == t_bridge:
+            elif dominant_bucket == "bridge":
                 b_bridge += layer_time
+            elif dominant_bucket == "tsv":
+                b_tsv += layer_time
             else:
                 b_router += layer_time
 
@@ -383,13 +472,16 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
     hbm_util = min(1.0, (total_hbm_bytes / total_time_s) / (cfg.hbm_bw_gbs * (1024**3)))
     hbf_util = min(1.0, (total_hbf_bytes / total_time_s) / (cfg.hbf_bw_gbs * (1024**3)))
     bridge_util = min(1.0, (total_bridge_bytes / total_time_s) / (cfg.bridge_bw_gbs * (1024**3)))
+    tsv_util = min(1.0, (total_tsv_bytes / total_time_s) / (tsv_effective_bw_gbs * (1024**3)))
+    base_die_util = min(1.0, (total_base_route_bytes / total_time_s) / (cfg.base_die_xbar_bw_gbs * (1024**3)))
+    bridge_domain_util = max(bridge_util, tsv_util, base_die_util)
 
     total_power = (
         cfg.p_compute_w * min(1.0, token_per_sec / 500.0)
         + cfg.p_hbm_w * hbm_util
         + cfg.p_hbf_w * hbf_util
         + cfg.p_sram_w * avg_sram_hit
-        + cfg.p_bridge_w * bridge_util
+        + cfg.p_bridge_w * bridge_domain_util
     )
     perf_per_watt = token_per_sec / max(total_power, 1e-6)
 
@@ -411,12 +503,19 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
         sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"], cfg.hbf_bw_gbs)
         + miss_rate * (cfg.hbf_latency_us * 1e-6),
         sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"], cfg.bridge_bw_gbs),
+        sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"], cfg.base_die_xbar_bw_gbs)
+        + sec_from_bytes(
+            (layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"])
+            * (1.0 + max(0.0, cfg.tsv_protocol_overhead)),
+            tsv_effective_bw_gbs,
+        )
+        + pkg_const_latency_s,
     ) + (0.5e-6 + active_expert_fraction * 1.0e-6)
     predicted_token_ms = predicted_layer_s * cfg.num_layers * 1000.0
     measured_token_ms = _safe_div(sum(token_latency_ms_samples), max(len(token_latency_ms_samples), 1))
     model_error_pct = 100.0 * abs(predicted_token_ms - measured_token_ms) / max(measured_token_ms, 1e-9)
 
-    bottleneck_total = b_compute + b_hbm + b_hbf + b_bridge + b_router
+    bottleneck_total = b_compute + b_hbm + b_hbf + b_bridge + b_tsv + b_router
     thermal_peak = max(thermal_trace) if thermal_trace else cfg.ambient_temp_c
     thermal_avg = _safe_div(sum(thermal_trace), max(len(thermal_trace), 1)) if thermal_trace else cfg.ambient_temp_c
     throttling_ratio = max(0.0, min(1.0, (thermal_peak - cfg.thermal_throttle_start_c) / 20.0))
@@ -439,7 +538,11 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
         "hbm_util": hbm_util,
         "hbf_util": hbf_util,
         "bridge_util": bridge_util,
+        "tsv_util": tsv_util,
+        "base_die_util": base_die_util,
         "bridge_contention_ms_total": bridge_contention_s_total * 1000.0,
+        "tsv_contention_ms_total": tsv_contention_s_total * 1000.0,
+        "base_route_contention_ms_total": base_route_contention_s_total * 1000.0,
         "hbf_miss_penalty_ms_total": hbf_miss_penalty_s_total * 1000.0,
         "burst_event_count": burst_events,
         "burst_event_ratio": _safe_div(burst_events, max(1, (num_tokens * cfg.num_layers))),
@@ -453,6 +556,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
         "bottleneck_hbm_pct": 100.0 * _safe_div(b_hbm, max(bottleneck_total, 1e-9)),
         "bottleneck_hbf_pct": 100.0 * _safe_div(b_hbf, max(bottleneck_total, 1e-9)),
         "bottleneck_bridge_pct": 100.0 * _safe_div(b_bridge, max(bottleneck_total, 1e-9)),
+        "bottleneck_tsv_pct": 100.0 * _safe_div(b_tsv, max(bottleneck_total, 1e-9)),
         "bottleneck_router_pct": 100.0 * _safe_div(b_router, max(bottleneck_total, 1e-9)),
         "thermal_peak_c": thermal_peak,
         "thermal_avg_c": thermal_avg,

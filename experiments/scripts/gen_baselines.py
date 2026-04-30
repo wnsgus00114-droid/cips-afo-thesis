@@ -23,8 +23,21 @@ BASE_CONFIG_PATH = ROOT / "experiments" / "configs" / "base.json"
 LOCKED_FIELDS = [
     "layer1_role",
     "layer2_role",
+    "package_topology",
+    "compute_bonding",
+    "memory_ring_mount",
     "hbm_ring_coverage",
     "hbf_outer_ring_coverage",
+    "base_die_xbar_bw_gbs",
+    "tsv_uplink_bw_gbs",
+    "tsv_protocol_overhead",
+    "tsv_lane_util_limit",
+    "periphery_to_center_hops",
+    "base_die_hop_latency_ns",
+    "microbump_latency_ns",
+    "hbm_stack_height_mm",
+    "compute_die_thickness_mm",
+    "periphery_ring_clearance_mm",
     "batch_size",
     "context_len",
     "kv_chunk_size_kb",
@@ -246,6 +259,8 @@ def make_rows() -> tuple[list[dict], list[dict], AFOConfig]:
                 "hbm_bw_gbs": cfg.hbm_bw_gbs,
                 "hbf_bw_gbs": cfg.hbf_bw_gbs,
                 "bridge_bw_gbs": cfg.bridge_bw_gbs,
+                "tsv_uplink_bw_gbs": cfg.tsv_uplink_bw_gbs,
+                "base_die_xbar_bw_gbs": cfg.base_die_xbar_bw_gbs,
             }
         )
 
@@ -278,6 +293,11 @@ def write_md(path: Path, rows: list[dict], base: AFOConfig) -> None:
             base.bridge_bw_gbs,
             base.hbf_latency_us,
         ),
+        "- Same package-neck constraints: `TSV BW={} GB/s`, `Base-die BW={} GB/s`, `TSV util cap={}`".format(
+            base.tsv_uplink_bw_gbs,
+            base.base_die_xbar_bw_gbs,
+            base.tsv_lane_util_limit,
+        ),
         "- Same capacity constraints: `HBM={}GB`, `HBF={}GB`, `SRAM={}MB`".format(
             base.hbm_capacity_gb,
             base.hbf_capacity_gb,
@@ -306,21 +326,23 @@ def write_md(path: Path, rows: list[dict], base: AFOConfig) -> None:
         [
             "",
             "## Bottleneck Attribution",
-            "| Baseline | compute% | hbm% | hbf% | bridge% | router% | bridge_util | sram_hit | overlap_eff |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+            "| Baseline | compute% | hbm% | hbf% | bridge% | tsv% | router% | bridge_util | tsv_util | sram_hit | overlap_eff |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
     )
 
     for r in rows:
         lines.append(
-            "| {baseline} | {c:.2f} | {hbm:.2f} | {hbf:.2f} | {br:.2f} | {rt:.2f} | {bru:.3f} | {sram:.3f} | {ov:.3f} |".format(
+            "| {baseline} | {c:.2f} | {hbm:.2f} | {hbf:.2f} | {br:.2f} | {tsv:.2f} | {rt:.2f} | {bru:.3f} | {tsvu:.3f} | {sram:.3f} | {ov:.3f} |".format(
                 baseline=r["baseline"],
                 c=r["bottleneck_compute_pct"],
                 hbm=r["bottleneck_hbm_pct"],
                 hbf=r["bottleneck_hbf_pct"],
                 br=r["bottleneck_bridge_pct"],
+                tsv=r["bottleneck_tsv_pct"],
                 rt=r["bottleneck_router_pct"],
                 bru=r["bridge_util"],
+                tsvu=r["tsv_util"],
                 sram=r["sram_hit_ratio"],
                 ov=r["overlap_efficiency"],
             )
@@ -378,14 +400,14 @@ def write_fairness_md(path: Path, cfg_rows: list[dict], base: AFOConfig) -> None
         [
             "",
             "## Variable Knobs by Baseline",
-            "| Baseline | shared_kv_ratio | weight_hbf_fraction | prefetch_accuracy | matrix_eff | routing_div | lhb_enable | lhb_size_mb | prefetch_depth |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+            "| Baseline | shared_kv_ratio | weight_hbf_fraction | prefetch_accuracy | matrix_eff | routing_div | lhb_enable | lhb_size_mb | prefetch_depth | tsv_bw | base_die_bw |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
     )
 
     for r in cfg_rows:
         lines.append(
-            "| {baseline} | {shared_kv_ratio:.2f} | {weight_hbf_fraction:.2f} | {prefetch_accuracy:.2f} | {matrix_efficiency:.2f} | {routing_diversity:.2f} | {lhb_enable} | {lhb_size_mb:.1f} | {prefetch_depth} |".format(
+            "| {baseline} | {shared_kv_ratio:.2f} | {weight_hbf_fraction:.2f} | {prefetch_accuracy:.2f} | {matrix_efficiency:.2f} | {routing_diversity:.2f} | {lhb_enable} | {lhb_size_mb:.1f} | {prefetch_depth} | {tsv_uplink_bw_gbs:.0f} | {base_die_xbar_bw_gbs:.0f} |".format(
                 **r
             )
         )

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560">
+  <rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+  <text x="490.0" y="30" text-anchor="middle" font-size="20" font-family="Times New Roman">A.F.O Sweep: base_die_xbar_bw_gbs vs Tail Ratio (p99/p50)</text>
+  <line x1="110" y1="50.0" x2="940" y2="50.0" stroke="#e5e7eb" />
+<line x1="110" y1="132.0" x2="940" y2="132.0" stroke="#e5e7eb" />
+<line x1="110" y1="214.0" x2="940" y2="214.0" stroke="#e5e7eb" />
+<line x1="110" y1="296.0" x2="940" y2="296.0" stroke="#e5e7eb" />
+<line x1="110" y1="378.0" x2="940" y2="378.0" stroke="#e5e7eb" />
+<line x1="110" y1="460.0" x2="940" y2="460.0" stroke="#e5e7eb" />
+  <line x1="110" y1="460" x2="940" y2="460" stroke="#333" />
+  <line x1="110" y1="50" x2="110" y2="460" stroke="#333" />
+  <polyline fill="none" stroke="#7c3aed" stroke-width="2.6" points="110.0,50.0 365.4,201.4 556.9,298.4 748.5,384.0 940.0,460.0" />
+  <circle cx="110.0" cy="50.0" r="4.5" fill="#7c3aed" />
+<circle cx="365.4" cy="201.4" r="4.5" fill="#7c3aed" />
+<circle cx="556.9" cy="298.4" r="4.5" fill="#7c3aed" />
+<circle cx="748.5" cy="384.0" r="4.5" fill="#7c3aed" />
+<circle cx="940.0" cy="460.0" r="4.5" fill="#7c3aed" />
+  <text x="110.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">4200</text>
+<text x="365.4" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">5000</text>
+<text x="556.9" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">5600</text>
+<text x="748.5" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">6200</text>
+<text x="940.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">6800</text>
+  <text x="525.0" y="520" text-anchor="middle" font-size="14" font-family="Times New Roman">base_die_xbar_bw_gbs</text>
+  <text x="28" y="255.0" transform="rotate(-90 28,255.0)" text-anchor="middle" font-size="14" font-family="Times New Roman">Tail Ratio (p99/p50)</text>
+</svg>

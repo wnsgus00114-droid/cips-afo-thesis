@@ -4,6 +4,15 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 
 | Plot File |
 |---|
+| `results/plots/base_die_xbar_bw_gbs_bridge_util.svg` |
+| `results/plots/base_die_xbar_bw_gbs_kv_reuse.svg` |
+| `results/plots/base_die_xbar_bw_gbs_mem_bottleneck.svg` |
+| `results/plots/base_die_xbar_bw_gbs_overlap_eff.svg` |
+| `results/plots/base_die_xbar_bw_gbs_tail_p99.svg` |
+| `results/plots/base_die_xbar_bw_gbs_tail_ratio.svg` |
+| `results/plots/base_die_xbar_bw_gbs_thermal_peak.svg` |
+| `results/plots/base_die_xbar_bw_gbs_throughput.svg` |
+| `results/plots/base_die_xbar_bw_gbs_tsv_util.svg` |
 | `results/plots/batch_size.svg` |
 | `results/plots/batch_size_bridge_util.svg` |
 | `results/plots/batch_size_kv_reuse.svg` |
@@ -13,6 +22,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/batch_size_tail_ratio.svg` |
 | `results/plots/batch_size_thermal_peak.svg` |
 | `results/plots/batch_size_throughput.svg` |
+| `results/plots/batch_size_tsv_util.svg` |
 | `results/plots/bridge_bw_gbs_bridge_util.svg` |
 | `results/plots/bridge_bw_gbs_kv_reuse.svg` |
 | `results/plots/bridge_bw_gbs_mem_bottleneck.svg` |
@@ -21,6 +31,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/bridge_bw_gbs_tail_ratio.svg` |
 | `results/plots/bridge_bw_gbs_thermal_peak.svg` |
 | `results/plots/bridge_bw_gbs_throughput.svg` |
+| `results/plots/bridge_bw_gbs_tsv_util.svg` |
 | `results/plots/context_len.svg` |
 | `results/plots/context_len_bridge_util.svg` |
 | `results/plots/context_len_kv_reuse.svg` |
@@ -30,6 +41,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/context_len_tail_ratio.svg` |
 | `results/plots/context_len_thermal_peak.svg` |
 | `results/plots/context_len_throughput.svg` |
+| `results/plots/context_len_tsv_util.svg` |
 | `results/plots/hbf_latency_us_bridge_util.svg` |
 | `results/plots/hbf_latency_us_kv_reuse.svg` |
 | `results/plots/hbf_latency_us_mem_bottleneck.svg` |
@@ -38,6 +50,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/hbf_latency_us_tail_ratio.svg` |
 | `results/plots/hbf_latency_us_thermal_peak.svg` |
 | `results/plots/hbf_latency_us_throughput.svg` |
+| `results/plots/hbf_latency_us_tsv_util.svg` |
 | `results/plots/kv_chunk_size_kb.svg` |
 | `results/plots/kv_chunk_size_kb_bridge_util.svg` |
 | `results/plots/kv_chunk_size_kb_kv_reuse.svg` |
@@ -47,6 +60,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/kv_chunk_size_kb_tail_ratio.svg` |
 | `results/plots/kv_chunk_size_kb_thermal_peak.svg` |
 | `results/plots/kv_chunk_size_kb_throughput.svg` |
+| `results/plots/kv_chunk_size_kb_tsv_util.svg` |
 | `results/plots/multi_tenant_users_bridge_util.svg` |
 | `results/plots/multi_tenant_users_kv_reuse.svg` |
 | `results/plots/multi_tenant_users_mem_bottleneck.svg` |
@@ -55,6 +69,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/multi_tenant_users_tail_ratio.svg` |
 | `results/plots/multi_tenant_users_thermal_peak.svg` |
 | `results/plots/multi_tenant_users_throughput.svg` |
+| `results/plots/multi_tenant_users_tsv_util.svg` |
 | `results/plots/num_experts.svg` |
 | `results/plots/num_experts_bridge_util.svg` |
 | `results/plots/num_experts_kv_reuse.svg` |
@@ -64,6 +79,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/num_experts_tail_ratio.svg` |
 | `results/plots/num_experts_thermal_peak.svg` |
 | `results/plots/num_experts_throughput.svg` |
+| `results/plots/num_experts_tsv_util.svg` |
 | `results/plots/prefetch_accuracy.svg` |
 | `results/plots/prefetch_accuracy_bridge_util.svg` |
 | `results/plots/prefetch_accuracy_kv_reuse.svg` |
@@ -73,6 +89,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/prefetch_accuracy_tail_ratio.svg` |
 | `results/plots/prefetch_accuracy_thermal_peak.svg` |
 | `results/plots/prefetch_accuracy_throughput.svg` |
+| `results/plots/prefetch_accuracy_tsv_util.svg` |
 | `results/plots/shared_kv_ratio.svg` |
 | `results/plots/shared_kv_ratio_bridge_util.svg` |
 | `results/plots/shared_kv_ratio_kv_reuse.svg` |
@@ -82,6 +99,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/shared_kv_ratio_tail_ratio.svg` |
 | `results/plots/shared_kv_ratio_thermal_peak.svg` |
 | `results/plots/shared_kv_ratio_throughput.svg` |
+| `results/plots/shared_kv_ratio_tsv_util.svg` |
 | `results/plots/sram_capacity_mb_bridge_util.svg` |
 | `results/plots/sram_capacity_mb_kv_reuse.svg` |
 | `results/plots/sram_capacity_mb_mem_bottleneck.svg` |
@@ -90,6 +108,7 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/sram_capacity_mb_tail_ratio.svg` |
 | `results/plots/sram_capacity_mb_thermal_peak.svg` |
 | `results/plots/sram_capacity_mb_throughput.svg` |
+| `results/plots/sram_capacity_mb_tsv_util.svg` |
 | `results/plots/stress_scenarios_bridge_util.svg` |
 | `results/plots/stress_scenarios_tail_p99.svg` |
 | `results/plots/stress_scenarios_thermal_peak.svg` |
@@ -101,3 +120,13 @@ Topology assumption: `Top=Compute`, `Bottom=HBM/HBF rings`.
 | `results/plots/traffic_burst_factor_tail_ratio.svg` |
 | `results/plots/traffic_burst_factor_thermal_peak.svg` |
 | `results/plots/traffic_burst_factor_throughput.svg` |
+| `results/plots/traffic_burst_factor_tsv_util.svg` |
+| `results/plots/tsv_uplink_bw_gbs_bridge_util.svg` |
+| `results/plots/tsv_uplink_bw_gbs_kv_reuse.svg` |
+| `results/plots/tsv_uplink_bw_gbs_mem_bottleneck.svg` |
+| `results/plots/tsv_uplink_bw_gbs_overlap_eff.svg` |
+| `results/plots/tsv_uplink_bw_gbs_tail_p99.svg` |
+| `results/plots/tsv_uplink_bw_gbs_tail_ratio.svg` |
+| `results/plots/tsv_uplink_bw_gbs_thermal_peak.svg` |
+| `results/plots/tsv_uplink_bw_gbs_throughput.svg` |
+| `results/plots/tsv_uplink_bw_gbs_tsv_util.svg` |

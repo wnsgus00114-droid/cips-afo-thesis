@@ -2,8 +2,21 @@
   "config": {
     "layer1_role": "compute_top",
     "layer2_role": "memory_bottom",
+    "package_topology": "active_base_3p5d",
+    "compute_bonding": "hybrid_3d_tsv",
+    "memory_ring_mount": "periphery_2p5d_microbump",
     "hbm_ring_coverage": 1.0,
     "hbf_outer_ring_coverage": 1.0,
+    "base_die_xbar_bw_gbs": 5600.0,
+    "tsv_uplink_bw_gbs": 4200.0,
+    "tsv_protocol_overhead": 0.1,
+    "tsv_lane_util_limit": 0.88,
+    "periphery_to_center_hops": 6,
+    "base_die_hop_latency_ns": 2.5,
+    "microbump_latency_ns": 8.0,
+    "hbm_stack_height_mm": 0.72,
+    "compute_die_thickness_mm": 0.12,
+    "periphery_ring_clearance_mm": 2.0,
     "model_size_gb": 180.0,
     "num_layers": 80,
     "hidden_dim": 8192,
@@ -156,6 +169,26 @@
         5600,
         6400
       ]
+    },
+    {
+      "param": "tsv_uplink_bw_gbs",
+      "values": [
+        2800,
+        3600,
+        4200,
+        5000,
+        5800
+      ]
+    },
+    {
+      "param": "base_die_xbar_bw_gbs",
+      "values": [
+        4200,
+        5000,
+        5600,
+        6200,
+        6800
+      ]
     }
   ],
   "stress_scenarios": [
@@ -194,6 +227,21 @@
       }
     },
     {
+      "scenario": "tsv_neck_pressure",
+      "overrides": {
+        "multi_tenant_users": 320,
+        "traffic_burst_factor": 2.4,
+        "burst_probability": 0.18,
+        "tail_jitter_sigma": 0.13,
+        "bridge_bw_gbs": 4200.0,
+        "tsv_uplink_bw_gbs": 3000.0,
+        "tsv_lane_util_limit": 0.82,
+        "periphery_to_center_hops": 8,
+        "thermal_hotspot_gain": 1.25,
+        "ambient_temp_c": 41.0
+      }
+    },
+    {
       "scenario": "thermal_hot",
       "overrides": {
         "multi_tenant_users": 192,
@@ -227,5 +275,5 @@
     37
   ],
   "num_tokens": 256,
-  "notes": "Synthetic analytical simulator; values are for architecture trend analysis and reproducibility."
+  "notes": "Synthetic analytical simulator with Active Base Die + TSV neck modeling; values are for architecture trend analysis and reproducibility."
 }

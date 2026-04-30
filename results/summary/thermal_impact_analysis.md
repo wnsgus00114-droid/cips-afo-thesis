@@ -9,12 +9,12 @@
 - worst_case_tail throttling_ratio: `1.000`
 
 ## Performance Impact
-- nominal throughput: `12.52 tok/s`
-- thermal_hot throughput: `6.42 tok/s`
-- worst_case_tail throughput: `1.46 tok/s`
-- nominal p99: `81.409 ms`
-- thermal_hot p99: `167.136 ms`
-- worst_case_tail p99: `804.009 ms`
+- nominal throughput: `5.68 tok/s`
+- thermal_hot throughput: `3.30 tok/s`
+- worst_case_tail throughput: `1.27 tok/s`
+- nominal p99: `179.476 ms`
+- thermal_hot p99: `317.280 ms`
+- worst_case_tail p99: `893.099 ms`
 
 ## Interpretation
 Thermal rise increases throttling ratio, which lengthens compute time and amplifies queue residency under burst traffic.

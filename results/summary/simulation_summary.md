@@ -1,31 +1,32 @@
 # A.F.O Simulation Summary (Reviewer-Driven Update)
 
 ## 1. Physical Topology Constraint
-- `Top (Layer1) = Compute Chipset`
-- `Bottom (Layer2) = Memory Ring Tier (inner HBM ring + outer HBF ring)`
-- Silicon bridge links memory ring tier to compute-side SRAM staging windows
+- `Top (Layer1) = Compute Chiplet (3D hybrid bonding on central base-die zone)`
+- `Bottom (Layer2) = Active Base Die (logic interposer with metadata/LHB/router fabric)`
+- `Periphery` of Layer2 mounts `inner HBM ring + outer HBF ring` via 2.5D micro-bumps
+- Data path is explicitly modeled as `ring ingress -> base-die lateral route -> central TSV neck -> SRAM staging`
 
 ## 2. Reliability Upgrade
 - Multi-seed aggregated sweeps and baselines are used (`seed_count` embedded in CSV).
 - Stress scenarios now include burst traffic, bridge saturation, and thermal-hot workload.
 - Reproducibility parameters are exported to `results/tables/reproducibility_params.md`.
 - Baseline fairness contract is explicit in `results/tables/baseline_fairness.md`.
-- Simulator sanity checks: `PASS=7` / `FAIL=0` (`results/tables/simulator_sanity_checks.md`).
+- Simulator sanity checks: `PASS=9` / `FAIL=0` (`results/tables/simulator_sanity_checks.md`).
 
 ## 3. Baseline Coverage
-- Best throughput baseline: `AFO_full` = `12.74` tokens/sec
-- Lowest p99 baseline: `AFO_full` = `80.004` ms
-- Highest p99 baseline: `Apple_like_UMA` = `85.277` ms
+- Best throughput baseline: `AFO_full` = `5.73` tokens/sec
+- Lowest p99 baseline: `AFO_full` = `178.058` ms
+- Highest p99 baseline: `Apple_like_UMA` = `183.432` ms
 - Baseline set includes: `HBM_only_GPU`, `MoSKA_only`, `H3_only`, `Apple_like_UMA`, `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like`.
 
 ## 4. Tail Latency / Worst-Case
-- Worst stress p99: `worst_case_tail` -> `804.009` ms
+- Worst stress p99: `worst_case_tail` -> `893.099` ms
 - Worst stress bridge contention: `worst_case_tail` -> `133816.345` ms
 - Worst stress thermal peak: `peak_traffic` -> `125.00` C
 
 ## 5. Why Bottleneck Changes
-- `bottleneck_hbm_pct`, `bottleneck_hbf_pct`, `bottleneck_bridge_pct` are now exported per point.
-- Review interpretation should track whether gain came from: `HBF miss penalty↓`, `bridge contention↓`, or `SRAM hit / overlap↑`.
+- `bottleneck_hbm_pct`, `bottleneck_hbf_pct`, `bottleneck_bridge_pct`, `bottleneck_tsv_pct` are exported per point.
+- Review interpretation should track whether gain came from: `HBF miss penalty↓`, `bridge contention↓`, `TSV contention↓`, or `SRAM hit / overlap↑`.
 - Causal chain report: `results/summary/causal_chain_analysis.md`.
 
 ## 6. Model vs Experiment Link
@@ -38,17 +39,19 @@
 - Dedicated sensitivity panel table: `results/tables/key_sensitivity_panels.md`.
 
 ## 8. Key Sweep Highlights
-- `batch_size` best throughput: `16` -> `24.62` tokens/sec; worst p99: `256` -> `83.723` ms
-- `bridge_bw_gbs` best throughput: `6400.0` -> `15.30` tokens/sec; worst p99: `3200.0` -> `121.793` ms
-- `context_len` best throughput: `1024` -> `12.59` tokens/sec; worst p99: `16384` -> `83.066` ms
-- `hbf_latency_us` best throughput: `4.0` -> `12.53` tokens/sec; worst p99: `12.0` -> `81.424` ms
-- `kv_chunk_size_kb` best throughput: `64` -> `12.69` tokens/sec; worst p99: `512` -> `87.811` ms
-- `multi_tenant_users` best throughput: `32` -> `14.99` tokens/sec; worst p99: `384` -> `239.295` ms
-- `num_experts` best throughput: `16` -> `12.52` tokens/sec; worst p99: `128` -> `81.410` ms
-- `prefetch_accuracy` best throughput: `0.95` -> `12.68` tokens/sec; worst p99: `0.6` -> `87.381` ms
-- `shared_kv_ratio` best throughput: `0.85` -> `12.53` tokens/sec; worst p99: `0.3` -> `81.471` ms
-- `sram_capacity_mb` best throughput: `1024.0` -> `12.78` tokens/sec; worst p99: `256.0` -> `86.483` ms
-- `traffic_burst_factor` best throughput: `1.0` -> `12.52` tokens/sec; worst p99: `3.0` -> `107.699` ms
+- `base_die_xbar_bw_gbs` best throughput: `6800.0` -> `6.13` tokens/sec; worst p99: `4200.0` -> `204.322` ms
+- `batch_size` best throughput: `16` -> `10.93` tokens/sec; worst p99: `256` -> `184.133` ms
+- `bridge_bw_gbs` best throughput: `6400.0` -> `5.74` tokens/sec; worst p99: `3200.0` -> `182.860` ms
+- `context_len` best throughput: `1024` -> `5.71` tokens/sec; worst p99: `16384` -> `182.813` ms
+- `hbf_latency_us` best throughput: `4.0` -> `5.68` tokens/sec; worst p99: `12.0` -> `179.491` ms
+- `kv_chunk_size_kb` best throughput: `64` -> `5.75` tokens/sec; worst p99: `512` -> `192.314` ms
+- `multi_tenant_users` best throughput: `32` -> `6.74` tokens/sec; worst p99: `384` -> `461.169` ms
+- `num_experts` best throughput: `16` -> `5.68` tokens/sec; worst p99: `128` -> `179.478` ms
+- `prefetch_accuracy` best throughput: `0.95` -> `5.71` tokens/sec; worst p99: `0.6` -> `185.442` ms
+- `shared_kv_ratio` best throughput: `0.85` -> `5.68` tokens/sec; worst p99: `0.3` -> `179.606` ms
+- `sram_capacity_mb` best throughput: `1024.0` -> `5.73` tokens/sec; worst p99: `256.0` -> `184.550` ms
+- `traffic_burst_factor` best throughput: `1.0` -> `5.68` tokens/sec; worst p99: `3.0` -> `209.359` ms
+- `tsv_uplink_bw_gbs` best throughput: `5800.0` -> `6.68` tokens/sec; worst p99: `2800.0` -> `228.247` ms
 
 ## 9. Artifacts
 - Sweep CSV (agg/raw): `results/sim/sweep_*.csv`, `results/sim/sweep_*_raw.csv`

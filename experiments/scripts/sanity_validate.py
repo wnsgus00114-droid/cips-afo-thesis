@@ -116,6 +116,7 @@ def main() -> None:
 
     sweeps = {
         "bridge_bw_gbs": ("bridge_bw_gbs", "latency_p99_ms", "negative"),
+        "tsv_uplink_bw_gbs": ("tsv_uplink_bw_gbs", "latency_p99_ms", "negative"),
         "prefetch_accuracy": ("prefetch_accuracy", "overlap_efficiency", "positive"),
         "shared_kv_ratio": ("shared_kv_ratio", "tokens_per_sec", "positive"),
     }
@@ -143,6 +144,23 @@ def main() -> None:
         f"mean(model_error_pct)={mean_model_err:.2f}%",
         "Cycle-inspired simulator remains first-order; error bound must stay moderate.",
     )
+
+    stress_path = SIM_DIR / "stress_scenarios.csv"
+    if stress_path.exists():
+        stress_rows = read_rows(stress_path)
+        nominal = row_by(stress_rows, "scenario", "nominal")
+        tsv_pressure = row_by(stress_rows, "scenario", "tsv_neck_pressure")
+        if nominal and tsv_pressure:
+            add_check(
+                checks,
+                "Stress check: TSV neck pressure worsens p99 tail",
+                to_f(tsv_pressure.get("latency_p99_ms", "0")) > to_f(nominal.get("latency_p99_ms", "0")),
+                "nominal p99={:.3f} ms, tsv_neck_pressure p99={:.3f} ms".format(
+                    to_f(nominal.get("latency_p99_ms", "0")),
+                    to_f(tsv_pressure.get("latency_p99_ms", "0")),
+                ),
+                "Central TSV neck contention should increase tail under bursty multi-tenant load.",
+            )
 
     pass_count = sum(1 for c in checks if c["status"] == "PASS")
     fail_count = len(checks) - pass_count

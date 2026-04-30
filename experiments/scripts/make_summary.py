@@ -80,20 +80,21 @@ def write_sweep_table(sweeps: dict[str, list[dict]]) -> None:
                 f"- Worst throughput: `{param}={w[param]}` -> `{to_float(w['tokens_per_sec']):.2f}` tokens/sec",
                 f"- Worst p99 tail: `{param}={wp99[param]}` -> `{to_float(wp99['latency_p99_ms']):.3f}` ms",
                 "",
-                f"| {param} | tokens/sec | p99_ms | tail_ratio | mem_bottleneck_% | bridge_util | sram_hit | overlap_eff | kv_reuse | thermal_peak_C |",
-                "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+                f"| {param} | tokens/sec | p99_ms | tail_ratio | mem_bottleneck_% | bridge_util | tsv_util | sram_hit | overlap_eff | kv_reuse | thermal_peak_C |",
+                "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             ]
         )
 
         for r in rows:
             lines.append(
-                "| {x} | {tps:.2f} | {p99:.3f} | {tail:.3f} | {mb:.2f} | {bru:.3f} | {sram:.3f} | {ov:.3f} | {reuse:.3f} | {th:.2f} |".format(
+                "| {x} | {tps:.2f} | {p99:.3f} | {tail:.3f} | {mb:.2f} | {bru:.3f} | {tsv:.3f} | {sram:.3f} | {ov:.3f} | {reuse:.3f} | {th:.2f} |".format(
                     x=r[param],
                     tps=to_float(r.get("tokens_per_sec", "0")),
                     p99=to_float(r.get("latency_p99_ms", "0")),
                     tail=to_float(r.get("tail_ratio_p99_p50", "0")),
                     mb=to_float(r.get("mem_bottleneck_pct", "0")),
                     bru=to_float(r.get("bridge_util", "0")),
+                    tsv=to_float(r.get("tsv_util", "0")),
                     sram=to_float(r.get("sram_hit_ratio", "0")),
                     ov=to_float(r.get("overlap_efficiency", "0")),
                     reuse=to_float(r.get("shared_kv_reuse_ratio", "0")),
@@ -139,6 +140,19 @@ def write_reproducibility(snapshot: dict) -> None:
     ]
 
     ordered_keys = [
+        "package_topology",
+        "compute_bonding",
+        "memory_ring_mount",
+        "base_die_xbar_bw_gbs",
+        "tsv_uplink_bw_gbs",
+        "tsv_protocol_overhead",
+        "tsv_lane_util_limit",
+        "periphery_to_center_hops",
+        "base_die_hop_latency_ns",
+        "microbump_latency_ns",
+        "hbm_stack_height_mm",
+        "compute_die_thickness_mm",
+        "periphery_ring_clearance_mm",
         "hbm_bw_gbs",
         "hbf_bw_gbs",
         "bridge_bw_gbs",
@@ -186,9 +200,10 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
         "# A.F.O Simulation Summary (Reviewer-Driven Update)",
         "",
         "## 1. Physical Topology Constraint",
-        "- `Top (Layer1) = Compute Chipset`",
-        "- `Bottom (Layer2) = Memory Ring Tier (inner HBM ring + outer HBF ring)`",
-        "- Silicon bridge links memory ring tier to compute-side SRAM staging windows",
+        "- `Top (Layer1) = Compute Chiplet (3D hybrid bonding on central base-die zone)`",
+        "- `Bottom (Layer2) = Active Base Die (logic interposer with metadata/LHB/router fabric)`",
+        "- `Periphery` of Layer2 mounts `inner HBM ring + outer HBF ring` via 2.5D micro-bumps",
+        "- Data path is explicitly modeled as `ring ingress -> base-die lateral route -> central TSV neck -> SRAM staging`",
         "",
         "## 2. Reliability Upgrade",
         "- Multi-seed aggregated sweeps and baselines are used (`seed_count` embedded in CSV).",
@@ -211,8 +226,8 @@ def write_main_summary(sweeps: dict[str, list[dict]], baselines: list[dict], str
         f"- Worst stress thermal peak: `{stress_worst_thermal.get('scenario', '-')}` -> `{to_float(stress_worst_thermal.get('thermal_peak_c', '0')):.2f}` C",
         "",
         "## 5. Why Bottleneck Changes",
-        "- `bottleneck_hbm_pct`, `bottleneck_hbf_pct`, `bottleneck_bridge_pct` are now exported per point.",
-        "- Review interpretation should track whether gain came from: `HBF miss penalty↓`, `bridge contention↓`, or `SRAM hit / overlap↑`.",
+        "- `bottleneck_hbm_pct`, `bottleneck_hbf_pct`, `bottleneck_bridge_pct`, `bottleneck_tsv_pct` are exported per point.",
+        "- Review interpretation should track whether gain came from: `HBF miss penalty↓`, `bridge contention↓`, `TSV contention↓`, or `SRAM hit / overlap↑`.",
         "- Causal chain report: `results/summary/causal_chain_analysis.md`.",
         "",
         "## 6. Model vs Experiment Link",

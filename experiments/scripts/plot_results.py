@@ -174,7 +174,7 @@ def save_sweep_summary(rows: list[dict], x_key: str, out_txt: Path) -> None:
     for r in rows:
         lines.append(
             "{x_key}={x}: tps={tps:.2f}, lat={lat:.3f}ms, p99={p99:.3f}ms, tail_ratio={tail:.3f}, "
-            "bridge_util={bridge:.3f}, overlap={ov:.3f}, reuse={reuse:.3f}, model_err={merr:.2f}%".format(
+            "bridge_util={bridge:.3f}, tsv_util={tsv:.3f}, overlap={ov:.3f}, reuse={reuse:.3f}, model_err={merr:.2f}%".format(
                 x_key=x_key,
                 x=r[x_key],
                 tps=to_float(r.get("tokens_per_sec", "0")),
@@ -182,6 +182,7 @@ def save_sweep_summary(rows: list[dict], x_key: str, out_txt: Path) -> None:
                 p99=to_float(r.get("latency_p99_ms", "0")),
                 tail=to_float(r.get("tail_ratio_p99_p50", "0")),
                 bridge=to_float(r.get("bridge_util", "0")),
+                tsv=to_float(r.get("tsv_util", "0")),
                 ov=to_float(r.get("overlap_efficiency", "0")),
                 reuse=to_float(r.get("shared_kv_reuse_ratio", "0")),
                 merr=to_float(r.get("model_error_pct", "0")),
@@ -208,6 +209,7 @@ def main() -> None:
         ("tail_ratio_p99_p50", "Tail Ratio (p99/p50)", "#7c3aed", "tail_ratio"),
         ("mem_bottleneck_pct", "Memory Bottleneck (%)", "#b45309", "mem_bottleneck"),
         ("bridge_util", "Bridge Utilization", "#0f766e", "bridge_util"),
+        ("tsv_util", "TSV Utilization", "#7c2d12", "tsv_util"),
         ("overlap_efficiency", "Overlap Efficiency", "#0369a1", "overlap_eff"),
         ("shared_kv_reuse_ratio", "Shared KV Reuse Ratio", "#4338ca", "kv_reuse"),
         ("thermal_peak_c", "Thermal Peak (C)", "#dc2626", "thermal_peak"),

@@ -1,11 +1,11 @@
 # Sweep Summary: prefetch_accuracy
-best_throughput: prefetch_accuracy=0.95 -> 12.68 tokens/sec
-worst_p99_tail: prefetch_accuracy=0.6 -> 87.381 ms
-worst_memory_bottleneck: prefetch_accuracy=0.6 -> 92.94%
+best_throughput: prefetch_accuracy=0.95 -> 5.71 tokens/sec
+worst_p99_tail: prefetch_accuracy=0.6 -> 185.442 ms
+worst_memory_bottleneck: prefetch_accuracy=0.6 -> 96.67%
 
 detailed_points:
-prefetch_accuracy=0.6: tps=11.67, lat=85.705ms, p99=87.381ms, tail_ratio=1.020, bridge_util=0.681, overlap=0.072, reuse=0.560, model_err=31.82%
-prefetch_accuracy=0.7: tps=11.94, lat=83.750ms, p99=85.390ms, tail_ratio=1.020, bridge_util=0.697, overlap=0.075, reuse=0.560, model_err=30.28%
-prefetch_accuracy=0.8: tps=12.23, lat=81.797ms, p99=83.399ms, tail_ratio=1.020, bridge_util=0.713, overlap=0.079, reuse=0.560, model_err=28.65%
-prefetch_accuracy=0.9: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
-prefetch_accuracy=0.95: tps=12.68, lat=78.867ms, p99=80.414ms, tail_ratio=1.020, bridge_util=0.740, overlap=0.083, reuse=0.560, model_err=26.00%
+prefetch_accuracy=0.6: tps=5.50, lat=181.859ms, p99=185.442ms, tail_ratio=1.020, bridge_util=0.321, tsv_util=0.458, overlap=0.031, reuse=0.560, model_err=26.73%
+prefetch_accuracy=0.7: tps=5.56, lat=179.909ms, p99=183.453ms, tail_ratio=1.020, bridge_util=0.324, tsv_util=0.463, overlap=0.032, reuse=0.560, model_err=25.93%
+prefetch_accuracy=0.8: tps=5.62, lat=177.959ms, p99=181.465ms, tail_ratio=1.020, bridge_util=0.328, tsv_util=0.468, overlap=0.034, reuse=0.560, model_err=25.12%
+prefetch_accuracy=0.9: tps=5.68, lat=176.009ms, p99=179.476ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.560, model_err=24.29%
+prefetch_accuracy=0.95: tps=5.71, lat=175.034ms, p99=178.482ms, tail_ratio=1.020, bridge_util=0.333, tsv_util=0.476, overlap=0.036, reuse=0.560, model_err=23.87%

@@ -1,0 +1,11 @@
+# Sweep Summary: base_die_xbar_bw_gbs
+best_throughput: base_die_xbar_bw_gbs=6800.0 -> 6.13 tokens/sec
+worst_p99_tail: base_die_xbar_bw_gbs=4200.0 -> 204.322 ms
+worst_memory_bottleneck: base_die_xbar_bw_gbs=4200.0 -> 96.80%
+
+detailed_points:
+base_die_xbar_bw_gbs=4200.0: tps=4.99, lat=200.375ms, p99=204.322ms, tail_ratio=1.020, bridge_util=0.291, tsv_util=0.416, overlap=0.031, reuse=0.560, model_err=25.19%
+base_die_xbar_bw_gbs=5000.0: tps=5.41, lat=184.781ms, p99=188.421ms, tail_ratio=1.020, bridge_util=0.316, tsv_util=0.451, overlap=0.033, reuse=0.560, model_err=24.64%
+base_die_xbar_bw_gbs=5600.0: tps=5.68, lat=176.009ms, p99=179.476ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.560, model_err=24.29%
+base_die_xbar_bw_gbs=6200.0: tps=5.92, lat=168.935ms, p99=172.263ms, tail_ratio=1.020, bridge_util=0.345, tsv_util=0.493, overlap=0.037, reuse=0.560, model_err=23.98%
+base_die_xbar_bw_gbs=6800.0: tps=6.13, lat=163.110ms, p99=166.323ms, tail_ratio=1.020, bridge_util=0.358, tsv_util=0.511, overlap=0.038, reuse=0.560, model_err=23.71%

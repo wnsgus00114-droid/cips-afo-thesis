@@ -5,6 +5,19 @@
 
 | Parameter | Value |
 |---|---:|
+| `package_topology` | `active_base_3p5d` |
+| `compute_bonding` | `hybrid_3d_tsv` |
+| `memory_ring_mount` | `periphery_2p5d_microbump` |
+| `base_die_xbar_bw_gbs` | `5600.0` |
+| `tsv_uplink_bw_gbs` | `4200.0` |
+| `tsv_protocol_overhead` | `0.1` |
+| `tsv_lane_util_limit` | `0.88` |
+| `periphery_to_center_hops` | `6` |
+| `base_die_hop_latency_ns` | `2.5` |
+| `microbump_latency_ns` | `8.0` |
+| `hbm_stack_height_mm` | `0.72` |
+| `compute_die_thickness_mm` | `0.12` |
+| `periphery_ring_clearance_mm` | `2.0` |
 | `hbm_bw_gbs` | `6400.0` |
 | `hbf_bw_gbs` | `4800.0` |
 | `bridge_bw_gbs` | `4800.0` |

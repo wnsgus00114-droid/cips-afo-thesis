@@ -7,8 +7,21 @@ This table discloses which variables are fixed and which variables are intention
 |---|---:|
 | `layer1_role` | `compute_top` |
 | `layer2_role` | `memory_bottom` |
+| `package_topology` | `active_base_3p5d` |
+| `compute_bonding` | `hybrid_3d_tsv` |
+| `memory_ring_mount` | `periphery_2p5d_microbump` |
 | `hbm_ring_coverage` | `1.0` |
 | `hbf_outer_ring_coverage` | `1.0` |
+| `base_die_xbar_bw_gbs` | `5600.0` |
+| `tsv_uplink_bw_gbs` | `4200.0` |
+| `tsv_protocol_overhead` | `0.1` |
+| `tsv_lane_util_limit` | `0.88` |
+| `periphery_to_center_hops` | `6` |
+| `base_die_hop_latency_ns` | `2.5` |
+| `microbump_latency_ns` | `8.0` |
+| `hbm_stack_height_mm` | `0.72` |
+| `compute_die_thickness_mm` | `0.12` |
+| `periphery_ring_clearance_mm` | `2.0` |
 | `batch_size` | `128` |
 | `context_len` | `4096` |
 | `kv_chunk_size_kb` | `128` |
@@ -36,16 +49,16 @@ This table discloses which variables are fixed and which variables are intention
 | `process_slowdown_sigma` | `0.03` |
 
 ## Variable Knobs by Baseline
-| Baseline | shared_kv_ratio | weight_hbf_fraction | prefetch_accuracy | matrix_eff | routing_div | lhb_enable | lhb_size_mb | prefetch_depth |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| AFO_full | 0.75 | 1.00 | 0.97 | 0.86 | 0.25 | 1 | 96.0 | 2 |
-| HBM_only_GPU | 0.00 | 0.00 | 0.78 | 0.64 | 0.58 | 0 | 32.0 | 1 |
-| MoSKA_only | 0.62 | 0.00 | 0.90 | 0.79 | 0.28 | 1 | 64.0 | 1 |
-| H3_only | 0.35 | 1.00 | 0.84 | 0.58 | 0.56 | 1 | 48.0 | 1 |
-| Apple_like_UMA | 0.25 | 0.40 | 0.74 | 0.66 | 0.60 | 0 | 32.0 | 1 |
-| vLLM_like | 0.40 | 0.00 | 0.91 | 0.80 | 0.42 | 1 | 72.0 | 2 |
-| FlashAttn_like | 0.15 | 0.00 | 0.88 | 0.84 | 0.50 | 0 | 32.0 | 1 |
-| TensorRTLLM_like | 0.30 | 0.10 | 0.93 | 0.83 | 0.40 | 1 | 80.0 | 2 |
+| Baseline | shared_kv_ratio | weight_hbf_fraction | prefetch_accuracy | matrix_eff | routing_div | lhb_enable | lhb_size_mb | prefetch_depth | tsv_bw | base_die_bw |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| AFO_full | 0.75 | 1.00 | 0.97 | 0.86 | 0.25 | 1 | 96.0 | 2 | 4200 | 5600 |
+| HBM_only_GPU | 0.00 | 0.00 | 0.78 | 0.64 | 0.58 | 0 | 32.0 | 1 | 4200 | 5600 |
+| MoSKA_only | 0.62 | 0.00 | 0.90 | 0.79 | 0.28 | 1 | 64.0 | 1 | 4200 | 5600 |
+| H3_only | 0.35 | 1.00 | 0.84 | 0.58 | 0.56 | 1 | 48.0 | 1 | 4200 | 5600 |
+| Apple_like_UMA | 0.25 | 0.40 | 0.74 | 0.66 | 0.60 | 0 | 32.0 | 1 | 4200 | 5600 |
+| vLLM_like | 0.40 | 0.00 | 0.91 | 0.80 | 0.42 | 1 | 72.0 | 2 | 4200 | 5600 |
+| FlashAttn_like | 0.15 | 0.00 | 0.88 | 0.84 | 0.50 | 0 | 32.0 | 1 | 4200 | 5600 |
+| TensorRTLLM_like | 0.30 | 0.10 | 0.93 | 0.83 | 0.40 | 1 | 80.0 | 2 | 4200 | 5600 |
 
 ## Policy-Level Baseline Note
 - `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like` do not represent vendor-measured kernels.

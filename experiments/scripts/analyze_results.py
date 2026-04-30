@@ -63,6 +63,7 @@ def get_sweep(name: str) -> list[dict]:
 
 def choose_tail_causes(row: dict) -> list[str]:
     causes: list[tuple[float, str]] = [
+        (to_f(row.get("bottleneck_tsv_pct", "0")), "central TSV neck"),
         (to_f(row.get("bottleneck_bridge_pct", "0")), "bridge saturation"),
         (to_f(row.get("bottleneck_hbf_pct", "0")), "HBF miss penalty exposure"),
         (to_f(row.get("bottleneck_hbm_pct", "0")), "HBM pressure"),
@@ -176,9 +177,11 @@ def write_tail_root_cause() -> None:
         "- p99 latency: `{:.3f} ms`".format(to_f(worst.get("latency_p99_ms", "0"))),
         "- p99/p50 tail ratio: `{:.3f}`".format(to_f(worst.get("tail_ratio_p99_p50", "0"))),
         "- bridge util: `{:.3f}`".format(to_f(worst.get("bridge_util", "0"))),
+        "- tsv util: `{:.3f}`".format(to_f(worst.get("tsv_util", "0"))),
         "- burst event ratio: `{:.3f}`".format(to_f(worst.get("burst_event_ratio", "0"))),
         "- hbf_miss_penalty_ms_total: `{:.3f}`".format(to_f(worst.get("hbf_miss_penalty_ms_total", "0"))),
         "- bridge_contention_ms_total: `{:.3f}`".format(to_f(worst.get("bridge_contention_ms_total", "0"))),
+        "- tsv_contention_ms_total: `{:.3f}`".format(to_f(worst.get("tsv_contention_ms_total", "0"))),
         "",
         "## Dominant Tail Causes",
     ]
@@ -195,6 +198,9 @@ def write_tail_root_cause() -> None:
             ),
             "- bridge contention delta: `{:+.3f} ms`".format(
                 to_f(worst.get("bridge_contention_ms_total", "0")) - to_f(nominal.get("bridge_contention_ms_total", "0"))
+            ),
+            "- tsv contention delta: `{:+.3f} ms`".format(
+                to_f(worst.get("tsv_contention_ms_total", "0")) - to_f(nominal.get("tsv_contention_ms_total", "0"))
             ),
             "- hbf miss penalty delta: `{:+.3f} ms`".format(
                 to_f(worst.get("hbf_miss_penalty_ms_total", "0")) - to_f(nominal.get("hbf_miss_penalty_ms_total", "0"))
@@ -263,6 +269,7 @@ def write_thermal_analysis() -> None:
 def write_key_sensitivity_table() -> None:
     targets = [
         ("bridge_bw_gbs", "latency_p99_ms", "negative"),
+        ("tsv_uplink_bw_gbs", "latency_p99_ms", "negative"),
         ("prefetch_accuracy", "overlap_efficiency", "positive"),
         ("shared_kv_ratio", "tokens_per_sec", "positive"),
     ]
@@ -290,6 +297,7 @@ def write_key_sensitivity_table() -> None:
             "",
             "Related plots:",
             "- `results/plots/bridge_bw_gbs_tail_p99.svg`",
+            "- `results/plots/tsv_uplink_bw_gbs_tail_p99.svg`",
             "- `results/plots/prefetch_accuracy_overlap_eff.svg`",
             "- `results/plots/shared_kv_ratio_throughput.svg`",
         ]

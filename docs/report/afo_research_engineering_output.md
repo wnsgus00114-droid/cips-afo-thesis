@@ -1,7 +1,7 @@
 # A.F.O End-to-End Research + Engineering Output
 
 ## 1. 3D Visualization Pipeline
-- Chip-level 3D (Top compute / Bottom memory-ring tier):
+- Chip-level 3D (Top compute / Bottom Active Base Die + periphery memory-ring tier):
   - compute die + inner HBM rectangular ring + outer HBF rectangular ring + silicon bridge lanes
 - System-level 3D:
   - package + board + cooling + IO interconnect
@@ -24,6 +24,7 @@
 ### Covered metrics
 - Throughput, mean latency, p90/p99/p999/max tail latency
 - Bridge/HBM/HBF utilization and contention time
+- Central TSV/base-die utilization and contention time
 - SRAM hit, overlap efficiency, LHB hit, HBF miss penalty
 - Shared-KV reuse ratio and batch gain
 - Thermal peak/avg/throttle ratio, throughput per watt

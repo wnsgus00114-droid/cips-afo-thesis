@@ -1,11 +1,11 @@
 # A.F.O LLM Token Decode Dataflow (MoSKA + H3)
 
 Topology assumption:
-- Layer-2 memory is nested rectangular rings (`HBM inner`, `HBF outer`) around Layer-1 compute.
+- Layer-2 is an Active Base Die with nested rectangular memory rings (`HBM inner`, `HBF outer`) on periphery around Layer-1 compute.
 
 ## 1. End-to-end Path
 ```text
-HBF/HBM -> H3 Address Router -> Silicon Bridge VN -> DMA -> SRAM Stage Buffers ->
+HBF/HBM (periphery) -> Active Base Die lateral route -> central TSV neck -> Silicon Bridge VN -> DMA -> SRAM Stage Buffers ->
 [Shared KV Engine | Unique KV Engine | Matrix Engine] -> HBM runtime KV append
 ```
 

@@ -1,8 +1,9 @@
 # A.F.O Runtime and Compiler Stack
 
 Physical convention:
-- Layer 1 (Top): compute die
-- Layer 2 (Bottom): memory die with inner HBM ring and outer HBF ring
+- Layer 1 (Top): compute die (central 3D hybrid bonding)
+- Layer 2 (Bottom): Active Base Die (logic interposer)
+- Layer 2 periphery: inner HBM ring + outer HBF ring via 2.5D micro-bumps
 
 ## 1. Inference Runtime Components
 1. Model Loader

@@ -3,7 +3,7 @@
 ## 1. Design Point (Concrete Target)
 - Workload: MoE LLM decode-heavy serving + long-context prefilling
 - Process target: 5nm-class compute die + 3D memory layer
-- Package: 2-layer 3D package with silicon bridge fabric
+- Package: 3.5D hybrid package (`Active Base Die + central 3D compute bonding + periphery 2.5D memory ring`)
 - Aggregate memory:
   - HBM3: 8 stacks x 24 GB = 192 GB, peak 6.4 TB/s
   - HBF (NAND-based high-capacity): 2 TB, prototype assumption peak 4.8 TB/s, 4-8 us read latency
@@ -23,7 +23,7 @@
 |   |                  768MB Banked Unified SRAM + LHB                         | |
 |   +------------------------Silicon Bridge / EMIB-like Fabric----------------+ |
 |                                                                                |
-|   [H3 Memory Layer (Bottom): HBM3 + HBF]                                      |
+|   [Layer2 Active Base Die (Bottom): logic interposer + HBM/HBF ring mount]    |
 |   +--------------------------------------------------------------------------+ |
 |   | Outer Ring: HBF (RO weights/shared KV/cold KV)                          | |
 |   | Inner Ring: HBM3 (runtime KV/activations/hot metadata)                  | |
@@ -39,9 +39,11 @@
   - East/West: GPU-like SIMT clusters and NPU matrix clusters
   - South: DMA/prefetch/KV scheduler + memory interface PHY
 - Layer 2 (Bottom, memory):
+  - Active Base Die includes metadata routing, LHB emergency path, and VN arbitration logic
   - Inner rectangular ring: HBM surrounds entire Layer-1 compute footprint
   - Outer rectangular ring: HBF surrounds the HBM ring
   - This nested ring topology regularizes ingress distance and simplifies bridge lane planning
+  - Memory stacks are mounted on periphery through 2.5D micro-bumps while compute is centrally bonded by 3D hybrid TSV
   - Silicon bridge lanes segmented into 3 virtual networks:
     - VN0: latency-critical runtime KV/activations
     - VN1: bulk read-only weights/shared KV
@@ -130,6 +132,7 @@ Shared KV Engine + Unique KV Engine + Matrix Engine -> output activations/runtim
 ## 10. Bottleneck Analysis (First-order)
 - HBF latency (4-8 us) is dominant for mispredicted shared-KV fetch
 - Silicon bridge saturation occurs before HBM peak when VN0/VN1 contention rises
+- Central TSV neck can dominate tail latency under bursty multi-tenant traffic
 - SRAM pressure spikes with large context + high expert entropy
 - Router overhead grows with chunk catalog size (ANN search cost)
 

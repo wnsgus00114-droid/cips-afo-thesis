@@ -9,11 +9,11 @@
 <line x1="110" y1="460.0" x2="940" y2="460.0" stroke="#e5e7eb" />
   <line x1="110" y1="460" x2="940" y2="460" stroke="#333" />
   <line x1="110" y1="50" x2="110" y2="460" stroke="#333" />
-  <polyline fill="none" stroke="#7c3aed" stroke-width="2.6" points="110.0,284.3 411.8,50.0 713.6,460.0 940.0,268.2" />
-  <circle cx="110.0" cy="284.3" r="4.5" fill="#7c3aed" />
-<circle cx="411.8" cy="50.0" r="4.5" fill="#7c3aed" />
-<circle cx="713.6" cy="460.0" r="4.5" fill="#7c3aed" />
-<circle cx="940.0" cy="268.2" r="4.5" fill="#7c3aed" />
+  <polyline fill="none" stroke="#7c3aed" stroke-width="2.6" points="110.0,50.0 411.8,199.0 713.6,348.1 940.0,460.0" />
+  <circle cx="110.0" cy="50.0" r="4.5" fill="#7c3aed" />
+<circle cx="411.8" cy="199.0" r="4.5" fill="#7c3aed" />
+<circle cx="713.6" cy="348.1" r="4.5" fill="#7c3aed" />
+<circle cx="940.0" cy="460.0" r="4.5" fill="#7c3aed" />
   <text x="110.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.3</text>
 <text x="411.8" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.5</text>
 <text x="713.6" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.7</text>
