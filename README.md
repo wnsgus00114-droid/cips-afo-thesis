@@ -103,12 +103,7 @@ bash scripts/check_all.sh
 - 시뮬레이터: [sim/afo_simulator.py](sim/afo_simulator.py)
 - 결과 폴더: [results](results)
 
-## 7) 보안/공개 정책
-
-- `result_paper/`는 로컬 전용 산출물이며, Git에 포함하면 안 됩니다.
-- 본 저장소의 `.gitignore`에 `result_paper/`가 포함되어 있어야 하며, 현재도 해당 정책을 유지합니다.
-
-## 8) 한계와 해석 범위
+## 7) 한계와 해석 범위
 
 - `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like`는 정책 수준의 synthetic baseline입니다.
 - 본 결과는 아키텍처 경향성 및 병목 인과 분석 목적이며, 실측 실리콘 수치와 동일시하면 안 됩니다.
