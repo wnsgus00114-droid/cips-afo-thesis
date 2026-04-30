@@ -9,23 +9,28 @@ module afo_dma_engine #(
   input  logic                 i_desc_valid,
   input  afo_defs::dma_desc_t  i_desc,
   output logic                 o_desc_ready,
+  input  logic                 i_dma_ready,
 
   output logic                 o_busy,
   output logic                 o_done_pulse,
 
-  output logic [7:0]           o_dbg_qcount
+  output logic [7:0]           o_dbg_qcount,
+  output logic [7:0]           o_dbg_qmax
 );
   import afo_defs::*;
 
   localparam int QCOUNT_W = $clog2(DESC_DEPTH) + 1;
   localparam logic [QCOUNT_W-1:0] DESC_DEPTH_L = QCOUNT_W'(DESC_DEPTH);
   logic [$clog2(DESC_DEPTH):0] wr_ptr, rd_ptr, qcount;
+  logic [$clog2(DESC_DEPTH):0] qmax;
+  logic [QCOUNT_W-1:0]         qcount_n;
   logic                        do_enq, do_deq, desc_nonzero;
   logic                        unused_desc_fields;
 
   assign o_desc_ready = (qcount < DESC_DEPTH_L);
   assign o_busy       = (qcount != 0);
   assign o_dbg_qcount = 8'(qcount);
+  assign o_dbg_qmax   = 8'(qmax);
   assign desc_nonzero = (i_desc.size_bytes != 0);
   assign unused_desc_fields = ^{
     i_desc.src_addr,
@@ -36,13 +41,23 @@ module afo_dma_engine #(
     i_desc.tensor_kind
   };
   assign do_enq       = i_desc_valid && o_desc_ready && desc_nonzero;
-  assign do_deq       = (qcount != 0);
+  assign do_deq       = (qcount != 0) && i_dma_ready;
+
+  always_comb begin
+    qcount_n = qcount;
+    unique case ({do_enq, do_deq})
+      2'b10: qcount_n = qcount + 1'b1;
+      2'b01: qcount_n = qcount - 1'b1;
+      default: qcount_n = qcount;
+    endcase
+  end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       wr_ptr      <= '0;
       rd_ptr      <= '0;
       qcount      <= '0;
+      qmax        <= '0;
       o_done_pulse <= 1'b0;
     end else begin
       o_done_pulse <= 1'b0;
@@ -57,11 +72,10 @@ module afo_dma_engine #(
         o_done_pulse <= 1'b1;
       end
 
-      unique case ({do_enq, do_deq})
-        2'b10: qcount <= qcount + 1'b1;
-        2'b01: qcount <= qcount - 1'b1;
-        default: qcount <= qcount;
-      endcase
+      qcount <= qcount_n;
+      if (qcount_n > qmax) begin
+        qmax <= qcount_n;
+      end
     end
   end
 endmodule

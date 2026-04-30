@@ -87,6 +87,13 @@ These scenarios jointly vary: concurrent users, burst probability, jitter, bridg
 - Artifact:
   - `results/tables/simulator_sanity_checks.md`
 
+## 6.1 RTL Contract Cross-Validation
+- Contract-level TB validates that decode fault gating blocks invalid prefetch, and backpressure induces queue buildup/drain-tail behavior.
+- This is used as interface-level evidence for the contention->tail causal path observed in analytical sweeps.
+- Artifacts:
+  - `docs/report/rtl_contract_validation.md`
+  - `results/rtl/rtl_contract_tb_summary.md`
+
 ## 7. Reproducibility and Artifacts
 - Parameter disclosure:
   - `results/sim/parameter_snapshot.json`

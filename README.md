@@ -41,12 +41,23 @@ python3 experiments/scripts/run_training_experiments.py --config experiments/con
 python3 experiments/scripts/plot_training_results.py
 ```
 
+### 4) Reproduce RTL Contract TB (Verilator)
+```bash
+make -C rtl contract_tb
+```
+
 ## Key Inference Results (Current Run)
 - AFO baseline: `12.74 tok/s`, `p99=80.004 ms`
 - HBM-only baseline: `12.30 tok/s`, `p99=82.918 ms`
 - Worst stress tail: `worst_case_tail p99=804.009 ms`
 - Worst stress bridge contention: `133816.345 ms`
 - Simulator sanity: `7 PASS / 0 FAIL`
+
+## RTL Contract Validation (Current Run)
+- Lint warning: `0`
+- Assertion TB: `PASS`
+- Saturation proxy queue peak: `12`
+- Saturation proxy drain cycles: `13`
 
 Primary artifacts:
 - [baseline_comparison.md](results/tables/baseline_comparison.md)
@@ -56,6 +67,8 @@ Primary artifacts:
 - [causal_chain_analysis.md](results/summary/causal_chain_analysis.md)
 - [tail_latency_root_cause.md](results/summary/tail_latency_root_cause.md)
 - [thermal_impact_analysis.md](results/summary/thermal_impact_analysis.md)
+- [rtl_contract_tb_summary.md](results/rtl/rtl_contract_tb_summary.md)
+- [rtl_contract_validation.md](docs/report/rtl_contract_validation.md)
 
 ## Why A.F.O Wins (Causal Chain)
 - KV reuse up -> batch_gain up -> shared-path GEMM efficiency up

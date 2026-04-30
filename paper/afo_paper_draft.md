@@ -121,6 +121,17 @@ From `results/summary/thermal_impact_analysis.md`:
 - thermal_hot and worst_case_tail reach 125 C peak in this policy model
 - throughput degrades with thermal throttling and queue amplification
 
+### 8.5 RTL contract-level validation
+From `results/rtl/rtl_contract_tb_summary.md`:
+- Verilator lint warnings: 0
+- Assertion TB status: PASS
+- Saturation proxy (backpressure-driven) peak queue depth: 12
+- Saturation proxy drain cycles: 13
+
+Interpretation:
+- By forcing `i_dma_ready=0`, the RTL queue behavior reproduces the same direction as simulator tail analysis: contention increases queue residency, then drain latency extends after release.
+- This is critical because it anchors the causal chain (bridge contention -> tail growth) at the interface-contract level, not only in analytical equations.
+
 ## 9. Discussion
 A.F.O does not claim that any single primitive is new. The novelty is enforceable cross-tier behavior under constrained interconnect.
 - Not composition, but enforced mechanism.
@@ -130,7 +141,7 @@ A.F.O does not claim that any single primitive is new. The novelty is enforceabl
 ## 10. Limitations
 - Not silicon-ready: no post-layout timing closure, no package-signoff thermal simulation.
 - Not production-grade runtime: no full kernel-level integration with vendor stacks.
-- Policy-level validation only: simulator is cycle-inspired first-order, not cycle-exact microarchitectural RTL.
+- Policy-level validation only: simulator is cycle-inspired first-order, and current RTL checks are contract-level proxies rather than full cycle-exact DRAM/NAND timing models.
 
 ## 11. Feasibility Roadmap
 - Phase 0: architecture specification

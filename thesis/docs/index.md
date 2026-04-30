@@ -12,6 +12,7 @@
 2. 연구 원고 초안: [`../../paper/afo_paper_draft.md`](../../paper/afo_paper_draft.md)
 3. 3D 모델(깃허브 회전 가능): [3D Models README](./assets/models/README.md)
 4. 피겨 설명: [Figure Atlas](./figure_atlas.md)
+5. RTL/TB 검증: [RTL Contract Validation](../../docs/report/rtl_contract_validation.md)
 
 ## 빠른 시작
 1. 3D 모델 확인

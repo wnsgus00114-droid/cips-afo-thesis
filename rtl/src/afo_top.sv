@@ -8,8 +8,10 @@ module afo_top (
   input  logic [7:0]  i_layer_cur,
   input  logic [51:0] i_weight_base,
   input  logic [51:0] i_kv_base,
+  input  logic        i_dma_ready,
 
   output logic [7:0]  o_dma_qcount,
+  output logic [7:0]  o_dma_qmax,
   output logic        o_dma_done,
   output logic        o_dma_busy,
   output afo_defs::mem_target_t o_dec_weight_target,
@@ -72,9 +74,11 @@ module afo_top (
     .i_desc_valid(desc_valid),
     .i_desc(desc),
     .o_desc_ready(desc_ready),
+    .i_dma_ready(i_dma_ready),
     .o_busy(dma_busy),
     .o_done_pulse(o_dma_done),
-    .o_dbg_qcount(o_dma_qcount)
+    .o_dbg_qcount(o_dma_qcount),
+    .o_dbg_qmax(o_dma_qmax)
   );
 
   assign o_dma_busy = dma_busy;

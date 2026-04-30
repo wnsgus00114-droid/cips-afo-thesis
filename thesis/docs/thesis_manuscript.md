@@ -151,6 +151,18 @@ Equation-to-metric 매핑:
 
 이는 3D 적층 구조에서 thermal 변수가 큐/타이밍을 직접 흔드는 1차 요인임을 시사한다.
 
+## 6.5 RTL Contract-Level Validation
+`results/rtl/rtl_contract_tb_summary.md`:
+- Verilator lint warning: 0
+- assertion TB: PASS
+- saturation proxy peak qdepth: 12
+- saturation proxy drain cycles: 13
+
+핵심 해석:
+- `i_dma_ready=0` backpressure 구간에서 큐 체류가 증가하고, ready 복구 후 drain tail이 길어진다.
+- 이는 시뮬레이터의 bridge contention -> tail latency 증가 해석(`results/summary/tail_latency_root_cause.md`)과 방향성이 일치한다.
+- 즉, 인과 체인이 수식/시뮬레이터뿐 아니라 RTL 인터페이스 계약 수준에서도 재확인된다.
+
 ## 7. Related Work Gap (What Fails and Why)
 - MoSKA: shared/unique KV 분리라는 중요한 연산 아이디어 제공, 그러나 물리 tier 강제 및 bridge-constrained overlap 계약까지는 확장되지 않음
 - H3: HBM+HBF 용량-비용 구조 제시, 그러나 burst 상황의 deterministic overlap 보장 메커니즘 부재
@@ -162,7 +174,7 @@ Equation-to-metric 매핑:
 ## 8. Implementation Feasibility
 - SW/analytical prototype: 완료 (`sim/`, `experiments/scripts/`)
 - runtime mock: 진행 (`runtime/`)
-- RTL critical path 블록: 주소 디코더, DMA, prefetch, SRAM buffer 중심 구현 계획
+- RTL critical path 블록: 주소 디코더, DMA, prefetch, SRAM buffer 구현 + assertion TB 검증 완료 (`docs/report/rtl_contract_validation.md`)
 - FPGA/ASIC flow: OpenROAD 실험 단계로 확장 가능
 
 ## 9. Limitations (Strong Form)
@@ -173,7 +185,7 @@ Equation-to-metric 매핑:
 - vendor kernel + serving stack 통합 검증 미완료
 
 3. **Policy-level validation only**
-- simulator는 cycle-inspired 근사 모델이며 cycle-exact RTL 모델이 아님
+- simulator는 cycle-inspired 근사 모델이고, 현재 RTL 검증도 contract-level proxy로서 DRAM/NAND cycle-exact timing을 포함하지 않음
 
 4. **Thermal model abstraction**
 - RC 수준 thermal coupling 모델로 CFD/FEM 기반 정밀 열해석은 future work

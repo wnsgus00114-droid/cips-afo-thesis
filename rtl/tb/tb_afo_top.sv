@@ -10,7 +10,9 @@ module tb_afo_top;
   logic [7:0] i_layer_cur;
   logic [51:0] i_weight_base;
   logic [51:0] i_kv_base;
+  logic i_dma_ready;
   logic [7:0] o_dma_qcount;
+  logic [7:0] o_dma_qmax;
   logic o_dma_done;
   logic o_dma_busy;
   mem_target_t o_dec_weight_target;
@@ -34,7 +36,9 @@ module tb_afo_top;
     .i_layer_cur(i_layer_cur),
     .i_weight_base(i_weight_base),
     .i_kv_base(i_kv_base),
+    .i_dma_ready(i_dma_ready),
     .o_dma_qcount(o_dma_qcount),
+    .o_dma_qmax(o_dma_qmax),
     .o_dma_done(o_dma_done),
     .o_dma_busy(o_dma_busy),
     .o_dec_weight_target(o_dec_weight_target),
@@ -112,6 +116,7 @@ module tb_afo_top;
     i_layer_cur = 8'd7;
     i_weight_base = 52'h1000_0000_0000;
     i_kv_base     = 52'h2000_0000_0000;
+    i_dma_ready   = 1'b1;
 
     #20;
     rst_n = 1;
@@ -151,6 +156,8 @@ module tb_afo_top;
       else $fatal(1, "DMA queue should drain to zero");
     assert (!o_dma_busy)
       else $fatal(1, "DMA should be idle after queue drain");
+    assert (o_dma_qmax <= 8'd2)
+      else $fatal(1, "Nominal path should keep queue shallow, qmax=%0d", o_dma_qmax);
 
     // Scenario 2: invalid KV base -> prefetch issue should be blocked.
     i_kv_base = 52'h5_0000_0000_0000; // invalid region ([51:48]=5)
@@ -168,6 +175,64 @@ module tb_afo_top;
       else $fatal(1, "Invalid base should not enqueue descriptors");
     assert (done_count == 2)
       else $fatal(1, "Invalid base should not trigger DMA done");
+
+    // Scenario 3: bridge saturation proxy via DMA backpressure.
+    i_weight_base = 52'h1000_0000_0000;
+    i_kv_base     = 52'h2000_0000_0000;
+    i_dma_ready   = 1'b0;
+    #10;
+    assert (!o_dec_weight_fault && !o_dec_kv_fault)
+      else $fatal(1, "Scenario3 requires valid HBF region bases");
+
+    begin : sat_proxy
+      integer before_done;
+      integer before_desc;
+      integer desc_expected;
+      integer sat_drain_cycles;
+      integer issue_idx;
+      integer sat_peak_q;
+      before_done = done_count;
+      before_desc = desc_accept_count;
+      desc_expected = 12; // 6 prefetch issues x 2 descriptors each
+      sat_peak_q = 0;
+
+      for (issue_idx = 0; issue_idx < 6; issue_idx = issue_idx + 1) begin
+        i_prefetch_issue = 1'b1;
+        #10;
+        i_prefetch_issue = 1'b0;
+        #20; // allow S_WEIGHT->S_KV descriptor emission
+        if (int'(o_dma_qcount) > sat_peak_q) sat_peak_q = int'(o_dma_qcount);
+      end
+      #10;
+      if (int'(o_dma_qcount) > sat_peak_q) sat_peak_q = int'(o_dma_qcount);
+
+      assert (done_count == before_done)
+        else $fatal(1, "Backpressure mode should block dequeues");
+      assert ((desc_accept_count - before_desc) == desc_expected)
+        else $fatal(1, "Expected %0d accepted descriptors under backpressure, got %0d", desc_expected, desc_accept_count - before_desc);
+      assert (sat_peak_q >= 8)
+        else $fatal(1, "Saturation proxy should build queue depth >=8, got %0d", sat_peak_q);
+      assert (int'(o_dma_qmax) >= sat_peak_q)
+        else $fatal(1, "DMA qmax counter should track observed peak, qmax=%0d peak=%0d", o_dma_qmax, sat_peak_q);
+
+      i_dma_ready = 1'b1;
+      sat_drain_cycles = 0;
+      while (((done_count - before_done) < desc_expected) && (sat_drain_cycles < 200)) begin
+        #10;
+        sat_drain_cycles = sat_drain_cycles + 1;
+      end
+
+      assert (sat_drain_cycles < 200)
+        else $fatal(1, "Saturation drain timed out");
+      assert (o_dma_qcount == 0)
+        else $fatal(1, "Queue should drain to zero after ready release");
+      assert ((done_count - before_done) == desc_expected)
+        else $fatal(1, "Done pulses mismatch after drain, got %0d expected %0d", done_count - before_done, desc_expected);
+      assert (sat_drain_cycles > 8)
+        else $fatal(1, "Drain cycles should show contention-induced tail (>8 cycles), got %0d", sat_drain_cycles);
+
+      $display("[RTL_PROXY] saturation_peak_q=%0d drain_cycles=%0d desc=%0d", sat_peak_q, sat_drain_cycles, desc_expected);
+    end
 
     $display("[PASS] tb_afo_top assertions passed.");
     $finish;

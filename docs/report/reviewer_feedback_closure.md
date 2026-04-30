@@ -13,6 +13,7 @@ This matrix maps the latest reviewer comments to concrete code/data/document art
 | 핵심 sensitivity 부족 | 3개 핵심 panel 지표화 | `results/tables/key_sensitivity_panels.md` + plot links |
 | thermal 설명 약함 | thermal-impact 리포트 분리 | `results/summary/thermal_impact_analysis.md` |
 | parameter disclosure 부족 | 재현 파라미터 공개 | `results/tables/reproducibility_params.md` |
+| 하드웨어 실현 가능성 증빙 부족 | DMA+Prefetch+Decoder assertion TB 확장 및 Verilator 파형 검증 | `rtl/tb/tb_afo_top.sv`, `results/rtl/rtl_contract_tb_summary.md`, `docs/report/rtl_contract_validation.md` |
 
 ## B. Paper/Story Feedback Closure
 | Feedback | Action | Artifact |
@@ -31,6 +32,7 @@ python3 experiments/scripts/plot_results.py
 python3 experiments/scripts/sanity_validate.py
 python3 experiments/scripts/analyze_results.py
 python3 experiments/scripts/make_summary.py
+make -C rtl contract_tb
 ```
 
 ## D. Status
