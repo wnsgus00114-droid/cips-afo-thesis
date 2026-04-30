@@ -1,0 +1,11 @@
+# Sweep Summary: hbf_latency_us
+best_throughput: hbf_latency_us=4.0 -> 12.53 tokens/sec
+worst_p99_tail: hbf_latency_us=12.0 -> 81.424 ms
+worst_memory_bottleneck: hbf_latency_us=12.0 -> 91.96%
+
+detailed_points:
+hbf_latency_us=4.0: tps=12.53, lat=79.839ms, p99=81.404ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+hbf_latency_us=6.0: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+hbf_latency_us=8.0: tps=12.52, lat=79.849ms, p99=81.414ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.91%
+hbf_latency_us=10.0: tps=12.52, lat=79.853ms, p99=81.419ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.91%
+hbf_latency_us=12.0: tps=12.52, lat=79.858ms, p99=81.424ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.92%

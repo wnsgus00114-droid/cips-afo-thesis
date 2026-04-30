@@ -1,0 +1,11 @@
+# Sweep Summary: multi_tenant_users
+best_throughput: multi_tenant_users=32 -> 14.99 tokens/sec
+worst_p99_tail: multi_tenant_users=384 -> 239.295 ms
+worst_memory_bottleneck: multi_tenant_users=384 -> 97.21%
+
+detailed_points:
+multi_tenant_users=32: tps=14.99, lat=66.698ms, p99=67.495ms, tail_ratio=1.012, bridge_util=0.875, overlap=0.086, reuse=0.560, model_err=12.49%
+multi_tenant_users=64: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+multi_tenant_users=128: tps=9.03, lat=110.779ms, p99=112.961ms, tail_ratio=1.020, bridge_util=0.527, overlap=0.060, reuse=0.560, model_err=47.32%
+multi_tenant_users=256: tps=5.78, lat=172.862ms, p99=176.267ms, tail_ratio=1.020, bridge_util=0.338, overlap=0.039, reuse=0.560, model_err=66.24%
+multi_tenant_users=384: tps=4.26, lat=234.671ms, p99=239.295ms, tail_ratio=1.020, bridge_util=0.249, overlap=0.028, reuse=0.560, model_err=75.13%

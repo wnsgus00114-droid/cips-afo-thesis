@@ -1,0 +1,28 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='760'>
+  <rect x='0' y='0' width='1200' height='760' fill='#0f1720'/>
+  <text x='40' y='50' fill='#e5e7eb' font-size='28' font-family='monospace'>A.F.O 3D Chip Static View</text>
+
+  <!-- Substrate -->
+  <polygon points='140,620 920,620 1080,520 300,520' fill='#5b5b5b' opacity='0.6'/>
+
+  <!-- Compute die (Layer-1 Top) -->
+  <polygon points='260,330 860,330 960,265 360,265' fill='#3b82f6' opacity='0.82'/>
+  <text x='560' y='302' fill='white' font-size='18' text-anchor='middle'>Layer-1 Top Compute SoC (CPU/GPU/NPU/SRAM/DMA/Router)</text>
+
+  <!-- Bridge -->
+  <polygon points='250,405 870,405 980,340 360,340' fill='#a16207' opacity='0.72'/>
+  <text x='610' y='380' fill='white' font-size='16' text-anchor='middle'>Silicon Bridge (VN0/VN1/VN2 QoS)</text>
+
+  <!-- Layer-2 Bottom memory rings -->
+  <!-- Inner HBM rectangular ring -->
+  <polygon points='230,520 905,520 1015,450 340,450' fill='#22c55e' opacity='0.45'/>
+  <polygon points='300,500 835,500 920,447 385,447' fill='#0f1720' opacity='1.0'/>
+  <text x='620' y='430' fill='#d1fae5' font-size='15' text-anchor='middle'>Layer-2 Bottom Inner HBM Ring (runtime KV / activations / hot metadata)</text>
+
+  <!-- Outer HBF rectangular ring -->
+  <polygon points='170,560 960,560 1090,475 300,475' fill='#f97316' opacity='0.33'/>
+  <polygon points='230,520 905,520 1015,450 340,450' fill='#0f1720' opacity='1.0'/>
+  <text x='620' y='590' fill='#ffedd5' font-size='15' text-anchor='middle'>Layer-2 Bottom Outer HBF Ring (RO weights / shared KV / cold KV)</text>
+
+  <text x='40' y='700' fill='#94a3b8' font-size='18'>Dataflow: HBM/HBF -> Bridge -> SRAM(A/B) -> Shared/Unique KV Engines -> Matrix</text>
+</svg>

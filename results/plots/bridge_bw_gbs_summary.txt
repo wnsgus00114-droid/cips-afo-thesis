@@ -1,0 +1,11 @@
+# Sweep Summary: bridge_bw_gbs
+best_throughput: bridge_bw_gbs=6400.0 -> 15.30 tokens/sec
+worst_p99_tail: bridge_bw_gbs=3200.0 -> 121.793 ms
+worst_memory_bottleneck: bridge_bw_gbs=3200.0 -> 94.63%
+
+detailed_points:
+bridge_bw_gbs=3200.0: tps=8.37, lat=119.441ms, p99=121.793ms, tail_ratio=1.020, bridge_util=0.733, overlap=0.054, reuse=0.560, model_err=26.75%
+bridge_bw_gbs=4000.0: tps=10.45, lat=95.676ms, p99=97.560ms, tail_ratio=1.020, bridge_util=0.732, overlap=0.068, reuse=0.560, model_err=26.82%
+bridge_bw_gbs=4800.0: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+bridge_bw_gbs=5600.0: tps=14.41, lat=69.376ms, p99=70.510ms, tail_ratio=1.017, bridge_util=0.721, overlap=0.094, reuse=0.560, model_err=15.98%
+bridge_bw_gbs=6400.0: tps=15.30, lat=65.370ms, p99=65.770ms, tail_ratio=1.006, bridge_util=0.670, overlap=0.099, reuse=0.560, model_err=10.83%

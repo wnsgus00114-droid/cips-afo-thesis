@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env / local cache
+.venv/
+.cache/
+.mpl/
+
+# OS / editor
+.DS_Store
+
+# RTL build artifacts
+rtl/obj_dir/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.toc
+
+# Optional temporary outputs
+*.tmp
+
+# Local-only final paper package (must not be pushed)
+result_paper/

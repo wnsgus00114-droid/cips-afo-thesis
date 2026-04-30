@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520">
+  <rect x="0" y="0" width="900" height="520" fill="#ffffff"/>
+  <text x="450.0" y="24" text-anchor="middle" font-size="18" font-family="sans-serif">
+    AFO Sweep: context_len vs Throughput
+  </text>
+  <line x1="90" y1="440" x2="870" y2="440" stroke="#333" />
+  <line x1="90" y1="40" x2="90" y2="440" stroke="#333" />
+  <polyline fill="none" stroke="#2f6fd6" stroke-width="2" points="90.0,40.0 142.0,66.9 246.0,120.7 454.0,227.7 870.0,440.0" />
+  <circle cx="90.0" cy="40.0" r="4" fill="#2f6fd6" />
+<circle cx="142.0" cy="66.9" r="4" fill="#2f6fd6" />
+<circle cx="246.0" cy="120.7" r="4" fill="#2f6fd6" />
+<circle cx="454.0" cy="227.7" r="4" fill="#2f6fd6" />
+<circle cx="870.0" cy="440.0" r="4" fill="#2f6fd6" />
+  <text x="480.0" y="492" text-anchor="middle" font-size="14" font-family="sans-serif">context_len</text>
+  <text x="22" y="240.0" transform="rotate(-90 22,240.0)" text-anchor="middle" font-size="14" font-family="sans-serif">tokens/sec</text>
+</svg>

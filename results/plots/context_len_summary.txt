@@ -1,0 +1,11 @@
+# Sweep Summary: context_len
+best_throughput: context_len=1024 -> 12.59 tokens/sec
+worst_p99_tail: context_len=16384 -> 83.066 ms
+worst_memory_bottleneck: context_len=16384 -> 92.12%
+
+detailed_points:
+context_len=1024: tps=12.59, lat=79.440ms, p99=80.997ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.482, model_err=26.61%
+context_len=2048: tps=12.57, lat=79.574ms, p99=81.134ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.511, model_err=26.70%
+context_len=4096: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+context_len=8192: tps=12.44, lat=80.383ms, p99=81.960ms, tail_ratio=1.020, bridge_util=0.730, overlap=0.081, reuse=0.633, model_err=27.29%
+context_len=16384: tps=12.28, lat=81.466ms, p99=83.066ms, tail_ratio=1.020, bridge_util=0.729, overlap=0.080, reuse=0.725, model_err=28.07%

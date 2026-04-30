@@ -1,0 +1,231 @@
+{
+  "config": {
+    "layer1_role": "compute_top",
+    "layer2_role": "memory_bottom",
+    "hbm_ring_coverage": 1.0,
+    "hbf_outer_ring_coverage": 1.0,
+    "model_size_gb": 180.0,
+    "num_layers": 80,
+    "hidden_dim": 8192,
+    "num_experts": 64,
+    "top_k": 4,
+    "batch_size": 128,
+    "context_len": 4096,
+    "kv_chunk_size_kb": 128,
+    "shared_kv_ratio": 0.65,
+    "weight_hbf_fraction": 1.0,
+    "moe_layer_ratio": 0.5,
+    "routing_diversity": 0.35,
+    "prefetch_accuracy": 0.9,
+    "hbm_capacity_gb": 192.0,
+    "hbf_capacity_gb": 2048.0,
+    "sram_capacity_mb": 768.0,
+    "hbm_bw_gbs": 6400.0,
+    "hbf_bw_gbs": 4800.0,
+    "bridge_bw_gbs": 4800.0,
+    "hbf_latency_us": 6.0,
+    "compute_tops_int8": 2200.0,
+    "matrix_efficiency": 0.72,
+    "freq_ghz": 1.5,
+    "p_compute_w": 420.0,
+    "p_hbm_w": 120.0,
+    "p_hbf_w": 45.0,
+    "p_sram_w": 55.0,
+    "p_bridge_w": 35.0,
+    "random_seed": 42,
+    "multi_tenant_users": 64,
+    "traffic_burst_factor": 1.0,
+    "burst_probability": 0.08,
+    "tail_jitter_sigma": 0.08,
+    "lhb_enable": 1,
+    "lhb_size_mb": 64.0,
+    "prefetch_depth": 1,
+    "thermal_model_enable": 1,
+    "ambient_temp_c": 35.0,
+    "thermal_hotspot_gain": 1.0,
+    "thermal_rc_tau_layers": 180.0,
+    "thermal_throttle_start_c": 88.0,
+    "thermal_throttle_max": 0.25,
+    "thermal_shutdown_c": 125.0,
+    "process_slowdown_sigma": 0.03
+  },
+  "sweep_params": [
+    {
+      "param": "batch_size",
+      "values": [
+        16,
+        32,
+        64,
+        128,
+        256
+      ]
+    },
+    {
+      "param": "context_len",
+      "values": [
+        1024,
+        2048,
+        4096,
+        8192,
+        16384
+      ]
+    },
+    {
+      "param": "num_experts",
+      "values": [
+        16,
+        32,
+        64,
+        128
+      ]
+    },
+    {
+      "param": "kv_chunk_size_kb",
+      "values": [
+        64,
+        128,
+        256,
+        512
+      ]
+    },
+    {
+      "param": "prefetch_accuracy",
+      "values": [
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        0.95
+      ]
+    },
+    {
+      "param": "shared_kv_ratio",
+      "values": [
+        0.3,
+        0.5,
+        0.7,
+        0.85
+      ]
+    },
+    {
+      "param": "sram_capacity_mb",
+      "values": [
+        256,
+        384,
+        512,
+        768,
+        1024
+      ]
+    },
+    {
+      "param": "hbf_latency_us",
+      "values": [
+        4.0,
+        6.0,
+        8.0,
+        10.0,
+        12.0
+      ]
+    },
+    {
+      "param": "multi_tenant_users",
+      "values": [
+        32,
+        64,
+        128,
+        256,
+        384
+      ]
+    },
+    {
+      "param": "traffic_burst_factor",
+      "values": [
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0
+      ]
+    },
+    {
+      "param": "bridge_bw_gbs",
+      "values": [
+        3200,
+        4000,
+        4800,
+        5600,
+        6400
+      ]
+    }
+  ],
+  "stress_scenarios": [
+    {
+      "scenario": "nominal",
+      "overrides": {
+        "multi_tenant_users": 64,
+        "traffic_burst_factor": 1.0,
+        "burst_probability": 0.08,
+        "tail_jitter_sigma": 0.08,
+        "thermal_hotspot_gain": 1.0,
+        "ambient_temp_c": 35.0
+      }
+    },
+    {
+      "scenario": "peak_traffic",
+      "overrides": {
+        "multi_tenant_users": 256,
+        "traffic_burst_factor": 2.0,
+        "burst_probability": 0.14,
+        "tail_jitter_sigma": 0.1,
+        "thermal_hotspot_gain": 1.1,
+        "ambient_temp_c": 38.0
+      }
+    },
+    {
+      "scenario": "bridge_saturation",
+      "overrides": {
+        "multi_tenant_users": 384,
+        "traffic_burst_factor": 2.8,
+        "burst_probability": 0.2,
+        "tail_jitter_sigma": 0.14,
+        "bridge_bw_gbs": 3600.0,
+        "thermal_hotspot_gain": 1.2,
+        "ambient_temp_c": 40.0
+      }
+    },
+    {
+      "scenario": "thermal_hot",
+      "overrides": {
+        "multi_tenant_users": 192,
+        "traffic_burst_factor": 1.8,
+        "burst_probability": 0.12,
+        "tail_jitter_sigma": 0.1,
+        "ambient_temp_c": 45.0,
+        "thermal_hotspot_gain": 1.35,
+        "thermal_throttle_start_c": 84.0
+      }
+    },
+    {
+      "scenario": "worst_case_tail",
+      "overrides": {
+        "multi_tenant_users": 512,
+        "traffic_burst_factor": 3.0,
+        "burst_probability": 0.25,
+        "tail_jitter_sigma": 0.16,
+        "prefetch_accuracy": 0.8,
+        "bridge_bw_gbs": 3200.0,
+        "hbf_latency_us": 10.0,
+        "ambient_temp_c": 45.0,
+        "thermal_hotspot_gain": 1.45,
+        "thermal_throttle_start_c": 82.0
+      }
+    }
+  ],
+  "seeds": [
+    11,
+    23,
+    37
+  ],
+  "num_tokens": 256,
+  "notes": "Synthetic analytical simulator; values are for architecture trend analysis and reproducibility."
+}

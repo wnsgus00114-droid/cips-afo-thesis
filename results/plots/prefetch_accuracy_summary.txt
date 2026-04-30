@@ -1,0 +1,11 @@
+# Sweep Summary: prefetch_accuracy
+best_throughput: prefetch_accuracy=0.95 -> 12.68 tokens/sec
+worst_p99_tail: prefetch_accuracy=0.6 -> 87.381 ms
+worst_memory_bottleneck: prefetch_accuracy=0.6 -> 92.94%
+
+detailed_points:
+prefetch_accuracy=0.6: tps=11.67, lat=85.705ms, p99=87.381ms, tail_ratio=1.020, bridge_util=0.681, overlap=0.072, reuse=0.560, model_err=31.82%
+prefetch_accuracy=0.7: tps=11.94, lat=83.750ms, p99=85.390ms, tail_ratio=1.020, bridge_util=0.697, overlap=0.075, reuse=0.560, model_err=30.28%
+prefetch_accuracy=0.8: tps=12.23, lat=81.797ms, p99=83.399ms, tail_ratio=1.020, bridge_util=0.713, overlap=0.079, reuse=0.560, model_err=28.65%
+prefetch_accuracy=0.9: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+prefetch_accuracy=0.95: tps=12.68, lat=78.867ms, p99=80.414ms, tail_ratio=1.020, bridge_util=0.740, overlap=0.083, reuse=0.560, model_err=26.00%

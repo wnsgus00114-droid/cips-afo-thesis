@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A.F.O 3D Viewer</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b1020; color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    #ui { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(15, 23, 42, 0.85); padding: 10px; border-radius: 8px; }
+    #ui button { margin-right: 8px; padding: 6px 10px; border: 1px solid #334155; background: #1e293b; color: #e5e7eb; cursor: pointer; }
+    #ui .hint { margin-top: 8px; font-size: 12px; color: #cbd5e1; }
+    #canvas { width: 100vw; height: 100vh; display: block; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <div><strong>A.F.O Interactive 3D Viewer</strong></div>
+    <button id="chipBtn">Load Chip Package</button>
+    <button id="sysBtn">Load Full System</button>
+    <div class="hint">Drag: rotate | Wheel: zoom | Right drag: pan</div>
+  </div>
+  <canvas id="canvas"></canvas>
+
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { OBJLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/OBJLoader.js';
+
+    const canvas = document.getElementById('canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b1020);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 5000);
+    camera.position.set(320, 240, 320);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(250, 450, 320);
+    scene.add(dir);
+
+    const grid = new THREE.GridHelper(800, 40, 0x334155, 0x1e293b);
+    scene.add(grid);
+
+    let active = null;
+    const loader = new OBJLoader();
+
+    function clearModel() {
+      if (!active) return;
+      scene.remove(active);
+      active.traverse((n) => {
+        if (n.geometry) n.geometry.dispose();
+        if (n.material) {
+          if (Array.isArray(n.material)) n.material.forEach(m => m.dispose());
+          else n.material.dispose();
+        }
+      });
+      active = null;
+    }
+
+    function frameObject(obj) {
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      controls.target.copy(center);
+
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const dist = maxDim * 1.8;
+      camera.position.set(center.x + dist, center.y + dist * 0.8, center.z + dist);
+      camera.near = Math.max(0.1, maxDim / 2000);
+      camera.far = Math.max(5000, maxDim * 30);
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    function loadObj(path) {
+      clearModel();
+      loader.load(path, (obj) => {
+        obj.traverse((n) => {
+          if (n.isMesh) {
+            n.material = new THREE.MeshStandardMaterial({ color: 0x60a5fa, metalness: 0.15, roughness: 0.55 });
+          }
+        });
+        active = obj;
+        scene.add(obj);
+        frameObject(obj);
+      });
+    }
+
+    document.getElementById('chipBtn').onclick = () => loadObj('../assets/models/afo_chip_package_3d.obj');
+    document.getElementById('sysBtn').onclick = () => loadObj('../assets/models/afo_hardware_system_3d.obj');
+
+    loadObj('../assets/models/afo_chip_package_3d.obj');
+
+    function render() {
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+    }
+    render();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

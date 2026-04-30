@@ -1,0 +1,11 @@
+# Sweep Summary: batch_size
+best_throughput: batch_size=16 -> 24.62 tokens/sec
+worst_p99_tail: batch_size=256 -> 83.723 ms
+worst_memory_bottleneck: batch_size=16 -> 98.03%
+
+detailed_points:
+batch_size=16: tps=24.62, lat=40.622ms, p99=41.417ms, tail_ratio=1.020, bridge_util=0.760, overlap=0.020, reuse=0.000, model_err=22.63%
+batch_size=32: tps=16.49, lat=60.642ms, p99=61.830ms, tail_ratio=1.020, bridge_util=0.745, overlap=0.027, reuse=0.000, model_err=24.32%
+batch_size=64: tps=12.70, lat=78.717ms, p99=80.259ms, tail_ratio=1.020, bridge_util=0.732, overlap=0.041, reuse=0.120, model_err=25.93%
+batch_size=128: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+batch_size=256: tps=12.18, lat=82.111ms, p99=83.723ms, tail_ratio=1.020, bridge_util=0.728, overlap=0.159, reuse=0.780, model_err=28.77%

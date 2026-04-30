@@ -1,0 +1,10 @@
+# Sweep Summary: kv_chunk_size_kb
+best_throughput: kv_chunk_size_kb=64 -> 12.69 tokens/sec
+worst_p99_tail: kv_chunk_size_kb=512 -> 87.811 ms
+worst_memory_bottleneck: kv_chunk_size_kb=512 -> 92.55%
+
+detailed_points:
+kv_chunk_size_kb=64: tps=12.69, lat=78.811ms, p99=80.355ms, tail_ratio=1.020, bridge_util=0.732, overlap=0.083, reuse=0.560, model_err=25.94%
+kv_chunk_size_kb=128: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+kv_chunk_size_kb=256: tps=12.21, lat=81.920ms, p99=83.528ms, tail_ratio=1.020, bridge_util=0.728, overlap=0.080, reuse=0.560, model_err=28.75%
+kv_chunk_size_kb=512: tps=11.61, lat=86.118ms, p99=87.811ms, tail_ratio=1.020, bridge_util=0.722, overlap=0.076, reuse=0.560, model_err=32.23%

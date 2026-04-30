@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560">
+  <rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+  <text x="490.0" y="30" text-anchor="middle" font-size="20" font-family="Times New Roman">A.F.O Sweep: prefetch_accuracy vs Throughput (tokens/sec)</text>
+  <line x1="110" y1="50.0" x2="940" y2="50.0" stroke="#e5e7eb" />
+<line x1="110" y1="132.0" x2="940" y2="132.0" stroke="#e5e7eb" />
+<line x1="110" y1="214.0" x2="940" y2="214.0" stroke="#e5e7eb" />
+<line x1="110" y1="296.0" x2="940" y2="296.0" stroke="#e5e7eb" />
+<line x1="110" y1="378.0" x2="940" y2="378.0" stroke="#e5e7eb" />
+<line x1="110" y1="460.0" x2="940" y2="460.0" stroke="#e5e7eb" />
+  <line x1="110" y1="460" x2="940" y2="460" stroke="#333" />
+  <line x1="110" y1="50" x2="110" y2="460" stroke="#333" />
+  <polyline fill="none" stroke="#1d4ed8" stroke-width="2.6" points="110.0,460.0 347.1,349.6 584.3,234.0 821.4,112.8 940.0,50.0" />
+  <circle cx="110.0" cy="460.0" r="4.5" fill="#1d4ed8" />
+<circle cx="347.1" cy="349.6" r="4.5" fill="#1d4ed8" />
+<circle cx="584.3" cy="234.0" r="4.5" fill="#1d4ed8" />
+<circle cx="821.4" cy="112.8" r="4.5" fill="#1d4ed8" />
+<circle cx="940.0" cy="50.0" r="4.5" fill="#1d4ed8" />
+  <text x="110.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.6</text>
+<text x="347.1" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.7</text>
+<text x="584.3" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.8</text>
+<text x="821.4" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.9</text>
+<text x="940.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">0.95</text>
+  <text x="525.0" y="520" text-anchor="middle" font-size="14" font-family="Times New Roman">prefetch_accuracy</text>
+  <text x="28" y="255.0" transform="rotate(-90 28,255.0)" text-anchor="middle" font-size="14" font-family="Times New Roman">Throughput (tokens/sec)</text>
+</svg>

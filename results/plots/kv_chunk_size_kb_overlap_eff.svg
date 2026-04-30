@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560">
+  <rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+  <text x="490.0" y="30" text-anchor="middle" font-size="20" font-family="Times New Roman">A.F.O Sweep: kv_chunk_size_kb vs Overlap Efficiency</text>
+  <line x1="110" y1="50.0" x2="940" y2="50.0" stroke="#e5e7eb" />
+<line x1="110" y1="132.0" x2="940" y2="132.0" stroke="#e5e7eb" />
+<line x1="110" y1="214.0" x2="940" y2="214.0" stroke="#e5e7eb" />
+<line x1="110" y1="296.0" x2="940" y2="296.0" stroke="#e5e7eb" />
+<line x1="110" y1="378.0" x2="940" y2="378.0" stroke="#e5e7eb" />
+<line x1="110" y1="460.0" x2="940" y2="460.0" stroke="#e5e7eb" />
+  <line x1="110" y1="460" x2="940" y2="460" stroke="#333" />
+  <line x1="110" y1="50" x2="110" y2="460" stroke="#333" />
+  <polyline fill="none" stroke="#0369a1" stroke-width="2.6" points="110.0,50.0 228.6,112.4 465.7,233.1 940.0,460.0" />
+  <circle cx="110.0" cy="50.0" r="4.5" fill="#0369a1" />
+<circle cx="228.6" cy="112.4" r="4.5" fill="#0369a1" />
+<circle cx="465.7" cy="233.1" r="4.5" fill="#0369a1" />
+<circle cx="940.0" cy="460.0" r="4.5" fill="#0369a1" />
+  <text x="110.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">64</text>
+<text x="228.6" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">128</text>
+<text x="465.7" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">256</text>
+<text x="940.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">512</text>
+  <text x="525.0" y="520" text-anchor="middle" font-size="14" font-family="Times New Roman">kv_chunk_size_kb</text>
+  <text x="28" y="255.0" transform="rotate(-90 28,255.0)" text-anchor="middle" font-size="14" font-family="Times New Roman">Overlap Efficiency</text>
+</svg>

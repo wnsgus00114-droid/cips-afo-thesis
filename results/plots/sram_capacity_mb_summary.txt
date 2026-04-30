@@ -1,0 +1,11 @@
+# Sweep Summary: sram_capacity_mb
+best_throughput: sram_capacity_mb=1024.0 -> 12.78 tokens/sec
+worst_p99_tail: sram_capacity_mb=256.0 -> 86.483 ms
+worst_memory_bottleneck: sram_capacity_mb=256.0 -> 92.43%
+
+detailed_points:
+sram_capacity_mb=256.0: tps=11.79, lat=84.819ms, p99=86.483ms, tail_ratio=1.020, bridge_util=0.688, overlap=0.076, reuse=0.560, model_err=31.19%
+sram_capacity_mb=384.0: tps=11.79, lat=84.819ms, p99=86.483ms, tail_ratio=1.020, bridge_util=0.688, overlap=0.076, reuse=0.560, model_err=31.19%
+sram_capacity_mb=512.0: tps=12.05, lat=82.995ms, p99=84.623ms, tail_ratio=1.020, bridge_util=0.703, overlap=0.078, reuse=0.560, model_err=29.68%
+sram_capacity_mb=768.0: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+sram_capacity_mb=1024.0: tps=12.78, lat=78.268ms, p99=79.802ms, tail_ratio=1.020, bridge_util=0.746, overlap=0.083, reuse=0.560, model_err=25.43%

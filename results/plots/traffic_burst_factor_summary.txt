@@ -1,0 +1,11 @@
+# Sweep Summary: traffic_burst_factor
+best_throughput: traffic_burst_factor=1.0 -> 12.52 tokens/sec
+worst_p99_tail: traffic_burst_factor=3.0 -> 107.699 ms
+worst_memory_bottleneck: traffic_burst_factor=3.0 -> 92.95%
+
+detailed_points:
+traffic_burst_factor=1.0: tps=12.52, lat=79.844ms, p99=81.409ms, tail_ratio=1.020, bridge_util=0.731, overlap=0.082, reuse=0.560, model_err=26.90%
+traffic_burst_factor=1.5: tps=12.04, lat=83.059ms, p99=87.148ms, tail_ratio=1.050, bridge_util=0.703, overlap=0.081, reuse=0.560, model_err=29.73%
+traffic_burst_factor=2.0: tps=11.59, lat=86.283ms, p99=93.960ms, tail_ratio=1.092, bridge_util=0.676, overlap=0.080, reuse=0.560, model_err=32.36%
+traffic_burst_factor=2.5: tps=11.17, lat=89.500ms, p99=100.809ms, tail_ratio=1.130, bridge_util=0.652, overlap=0.079, reuse=0.560, model_err=34.79%
+traffic_burst_factor=3.0: tps=10.79, lat=92.712ms, p99=107.699ms, tail_ratio=1.166, bridge_util=0.629, overlap=0.079, reuse=0.560, model_err=37.05%
