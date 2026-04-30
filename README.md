@@ -7,6 +7,23 @@
 - 실험은 다중 시드, 스트레스 시나리오, 공정성(Fairness) 계약, sanity 검증까지 포함합니다.
 - 최신 캘리브레이션 재실험에서 bridge/TSV 병목 기여가 분리되어 관측됩니다(예: baseline 평균 `bridge 32.60% / tsv 67.40%`).
 
+## 논문 Figure 미리보기
+
+### Figure 1. Chip-level 3D (Active Base Die)
+![Figure 1](fig/f1.png)
+
+### Figure 2. System-level 3D Deployment
+![Figure 2](fig/f2.png)
+
+### Figure 3. Memory Map + Banking + Replay
+![Figure 3](fig/f3.png)
+
+### Figure 4. Layer Pipeline Timeline
+![Figure 4](fig/f4.png)
+
+### Figure 5. Experiment Evidence Panels
+![Figure 5](fig/f5.png)
+
 ## 1) 물리 구현 가능성(Feasibility) 정의
 
 본 리포지토리는 아래 패키징 계약을 고정 가정으로 사용합니다.
