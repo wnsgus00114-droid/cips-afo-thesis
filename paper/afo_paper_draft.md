@@ -128,9 +128,24 @@ From `results/rtl/rtl_contract_tb_summary.md`:
 - Saturation proxy (backpressure-driven) peak queue depth: 12
 - Saturation proxy drain cycles: 13
 
+From `results/rtl/unit_tb_report.md`:
+- `tb_afo_addr_decoder`: PASS, coverage 13/13
+- `tb_afo_prefetch_engine`: PASS, coverage 7/7
+- `tb_afo_dma_engine`: PASS, coverage 6/6
+
 Interpretation:
 - By forcing `i_dma_ready=0`, the RTL queue behavior reproduces the same direction as simulator tail analysis: contention increases queue residency, then drain latency extends after release.
 - This is critical because it anchors the causal chain (bridge contention -> tail growth) at the interface-contract level, not only in analytical equations.
+- The separated unit TB coverage closes a common reviewer attack point: \"integration-only TB may hide block-level bugs\".
+
+### 8.6 Release quality gate
+From `results/qa/release_gate.md`:
+- simulator sanity gate: PASS
+- rtl contract gate: PASS
+- rtl unit-tb gate: PASS
+- fairness/causal/tail/thermal artifact gates: PASS
+
+This gate is included to reduce ambiguity in reproducibility and review-readiness.
 
 ## 9. Discussion
 A.F.O does not claim that any single primitive is new. The novelty is enforceable cross-tier behavior under constrained interconnect.

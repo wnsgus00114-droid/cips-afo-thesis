@@ -44,6 +44,8 @@ python3 experiments/scripts/plot_training_results.py
 ### 4) Reproduce RTL Contract TB (Verilator)
 ```bash
 make -C rtl contract_tb
+make -C rtl unit_tb
+python3 scripts/build_release_gate.py
 ```
 
 ## Key Inference Results (Current Run)
@@ -59,6 +61,12 @@ make -C rtl contract_tb
 - Saturation proxy queue peak: `12`
 - Saturation proxy drain cycles: `13`
 
+## RTL Unit TB Coverage (Current Run)
+- `tb_afo_addr_decoder`: `PASS`, coverage `13/13`
+- `tb_afo_prefetch_engine`: `PASS`, coverage `7/7`
+- `tb_afo_dma_engine`: `PASS`, coverage `6/6`
+- Overall unit-TB gate: `PASS`
+
 Primary artifacts:
 - [baseline_comparison.md](results/tables/baseline_comparison.md)
 - [baseline_fairness.md](results/tables/baseline_fairness.md)
@@ -68,6 +76,8 @@ Primary artifacts:
 - [tail_latency_root_cause.md](results/summary/tail_latency_root_cause.md)
 - [thermal_impact_analysis.md](results/summary/thermal_impact_analysis.md)
 - [rtl_contract_tb_summary.md](results/rtl/rtl_contract_tb_summary.md)
+- [unit_tb_report.md](results/rtl/unit_tb_report.md)
+- [release_gate.md](results/qa/release_gate.md)
 - [rtl_contract_validation.md](docs/report/rtl_contract_validation.md)
 
 ## Why A.F.O Wins (Causal Chain)

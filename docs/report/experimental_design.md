@@ -93,6 +93,8 @@ These scenarios jointly vary: concurrent users, burst probability, jitter, bridg
 - Artifacts:
   - `docs/report/rtl_contract_validation.md`
   - `results/rtl/rtl_contract_tb_summary.md`
+  - `results/rtl/unit_tb_report.md`
+  - `results/qa/release_gate.md`
 
 ## 7. Reproducibility and Artifacts
 - Parameter disclosure:

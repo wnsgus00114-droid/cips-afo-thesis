@@ -3,7 +3,7 @@ TB  := tb_afo_top
 SRC := src/afo_addr_decoder.sv src/afo_dma_engine.sv src/afo_prefetch_engine.sv src/afo_top.sv
 INC := include
 
-.PHONY: lint sim wave contract_tb clean
+.PHONY: lint sim wave contract_tb unit_tb clean
 
 lint:
 	verilator --lint-only -Wall -Wno-fatal --assert -I$(INC) $(SRC) tb/$(TB).sv
@@ -18,6 +18,9 @@ wave: sim
 
 contract_tb:
 	python3 scripts/run_contract_tb.py
+
+unit_tb:
+	python3 scripts/run_unit_tbs.py
 
 clean:
 	rm -rf obj_dir

@@ -158,10 +158,25 @@ Equation-to-metric 매핑:
 - saturation proxy peak qdepth: 12
 - saturation proxy drain cycles: 13
 
+`results/rtl/unit_tb_report.md`:
+- `tb_afo_addr_decoder`: PASS, coverage 13/13
+- `tb_afo_prefetch_engine`: PASS, coverage 7/7
+- `tb_afo_dma_engine`: PASS, coverage 6/6
+
 핵심 해석:
 - `i_dma_ready=0` backpressure 구간에서 큐 체류가 증가하고, ready 복구 후 drain tail이 길어진다.
 - 이는 시뮬레이터의 bridge contention -> tail latency 증가 해석(`results/summary/tail_latency_root_cause.md`)과 방향성이 일치한다.
 - 즉, 인과 체인이 수식/시뮬레이터뿐 아니라 RTL 인터페이스 계약 수준에서도 재확인된다.
+- 분리된 단위 TB 커버리지는 블록 단위 결함 누락 가능성을 추가로 낮춘다.
+
+## 6.6 Release Quality Gate
+`results/qa/release_gate.md`는 리뷰어 방어를 위한 통합 게이트다.
+- simulator sanity: PASS
+- rtl contract TB: PASS
+- rtl unit TB coverage gate: PASS
+- fairness/causal/tail/thermal 필수 산출물 존재: PASS
+
+이 게이트는 \"재현 가능성\"과 \"근거 체인 누락\" 피드백을 줄이기 위한 최종 검수 절차로 사용한다.
 
 ## 7. Related Work Gap (What Fails and Why)
 - MoSKA: shared/unique KV 분리라는 중요한 연산 아이디어 제공, 그러나 물리 tier 강제 및 bridge-constrained overlap 계약까지는 확장되지 않음

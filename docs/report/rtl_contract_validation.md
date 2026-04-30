@@ -22,12 +22,17 @@
 ## How to Run
 ```bash
 make -C rtl contract_tb
+make -C rtl unit_tb
 ```
 
 생성 산출물:
 - `results/rtl/tb_afo_top_run.log`
 - `results/rtl/rtl_contract_tb_summary.md`
+- `results/rtl/unit_tb_report.md`
 - `results/waves/tb_afo_top.vcd`
+- `results/waves/tb_afo_addr_decoder.vcd`
+- `results/waves/tb_afo_prefetch_engine.vcd`
+- `results/waves/tb_afo_dma_engine.vcd`
 
 ## Assertion Matrix
 | Scenario | Assertion Intention |
@@ -43,9 +48,15 @@ make -C rtl contract_tb
 - saturation peak qdepth: 12
 - saturation drain cycles: 13
 
+`results/rtl/unit_tb_report.md` 기준:
+- `tb_afo_addr_decoder`: PASS, coverage 13/13
+- `tb_afo_prefetch_engine`: PASS, coverage 7/7
+- `tb_afo_dma_engine`: PASS, coverage 6/6
+
 ## Link to Experiment Analysis
 - RTL saturation proxy는 `results/summary/tail_latency_root_cause.md`의 bridge contention 증가와 동일한 방향성(큐 체류 증가)을 보인다.
 - `results/tables/key_sensitivity_panels.md`의 bridge BW vs p99 음의 상관과 정합적이다.
+- 상세 리뷰 게이트는 `results/qa/release_gate.md`에서 통합 확인한다.
 
 ## Limitation
 - 본 TB는 contract-level 검증이며, HBM/HBF 실제 DRAM/NAND cycle timing을 모델링하지 않는다.
