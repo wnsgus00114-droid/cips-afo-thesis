@@ -5,7 +5,7 @@
 ## 핵심 요약
 - A.F.O는 단순 3D 적층 가정이 아니라, `Active Base Die + 중앙 3D TSV + 외곽 2.5D 메모리 링` 토폴로지를 명시적으로 모델링합니다.
 - 실험은 다중 시드, 스트레스 시나리오, 공정성(Fairness) 계약, sanity 검증까지 포함합니다.
-- 최신 재실험(본 저장소 현재 결과)에서 TSV neck 대역폭이 tail latency를 강하게 지배함을 확인했습니다.
+- 최신 캘리브레이션 재실험에서 bridge/TSV 병목 기여가 분리되어 관측됩니다(예: baseline 평균 `bridge 32.60% / tsv 67.40%`).
 
 ## 1) 물리 구현 가능성(Feasibility) 정의
 
@@ -20,14 +20,18 @@
 
 ## 2) 최신 실험 헤드라인 (재실행 결과)
 
-- Baseline 최고 처리량: `AFO_full = 5.73 tok/s`
-- Baseline 최소 p99: `AFO_full = 178.058 ms`
+- Baseline 최고 처리량: `AFO_full = 4.16 tok/s`
+- Baseline 최소 p99: `AFO_full = 244.814 ms`
 - HBM-only 대비: `AFO_full`가 처리량/꼬리 지연 모두 우세
-  - `5.73 vs 5.63 tok/s`, `178.058 vs 181.122 ms`
-- 최악 스트레스 tail: `worst_case_tail p99 = 893.099 ms`
+  - `4.16 vs 4.02 tok/s`, `244.814 vs 253.845 ms`
+- 최악 스트레스 tail: `worst_case_tail p99 = 1579.098 ms`
 - 최악 bridge contention: `133816.345 ms`
-- TSV neck 압박 시나리오: `nominal p99 179.476 ms -> tsv_neck_pressure p99 618.234 ms`
+- TSV neck 압박 시나리오: `nominal p99 248.389 ms -> tsv_neck_pressure p99 943.414 ms`
 - Simulator sanity: `9 PASS / 0 FAIL`
+
+병목 기여 분해(캘리브레이션 결과):
+- Baseline(AFO_full): `bridge 32.60%`, `tsv 67.40%`
+- Worst-case tail: `bridge 49.51%`, `tsv 50.49%`
 
 주요 민감도(Reviewer critical):
 - `corr(bridge_bw_gbs, latency_p99_ms) = -0.979`

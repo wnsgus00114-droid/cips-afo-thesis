@@ -14,13 +14,13 @@
 - Simulator sanity checks: `PASS=9` / `FAIL=0` (`results/tables/simulator_sanity_checks.md`).
 
 ## 3. Baseline Coverage
-- Best throughput baseline: `AFO_full` = `5.73` tokens/sec
-- Lowest p99 baseline: `AFO_full` = `178.058` ms
-- Highest p99 baseline: `Apple_like_UMA` = `183.432` ms
+- Best throughput baseline: `AFO_full` = `4.16` tokens/sec
+- Lowest p99 baseline: `AFO_full` = `244.814` ms
+- Highest p99 baseline: `Apple_like_UMA` = `257.329` ms
 - Baseline set includes: `HBM_only_GPU`, `MoSKA_only`, `H3_only`, `Apple_like_UMA`, `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like`.
 
 ## 4. Tail Latency / Worst-Case
-- Worst stress p99: `worst_case_tail` -> `893.099` ms
+- Worst stress p99: `worst_case_tail` -> `1579.098` ms
 - Worst stress bridge contention: `worst_case_tail` -> `133816.345` ms
 - Worst stress thermal peak: `peak_traffic` -> `125.00` C
 
@@ -39,19 +39,19 @@
 - Dedicated sensitivity panel table: `results/tables/key_sensitivity_panels.md`.
 
 ## 8. Key Sweep Highlights
-- `base_die_xbar_bw_gbs` best throughput: `6800.0` -> `6.13` tokens/sec; worst p99: `4200.0` -> `204.322` ms
-- `batch_size` best throughput: `16` -> `10.93` tokens/sec; worst p99: `256` -> `184.133` ms
-- `bridge_bw_gbs` best throughput: `6400.0` -> `5.74` tokens/sec; worst p99: `3200.0` -> `182.860` ms
-- `context_len` best throughput: `1024` -> `5.71` tokens/sec; worst p99: `16384` -> `182.813` ms
-- `hbf_latency_us` best throughput: `4.0` -> `5.68` tokens/sec; worst p99: `12.0` -> `179.491` ms
-- `kv_chunk_size_kb` best throughput: `64` -> `5.75` tokens/sec; worst p99: `512` -> `192.314` ms
-- `multi_tenant_users` best throughput: `32` -> `6.74` tokens/sec; worst p99: `384` -> `461.169` ms
-- `num_experts` best throughput: `16` -> `5.68` tokens/sec; worst p99: `128` -> `179.478` ms
-- `prefetch_accuracy` best throughput: `0.95` -> `5.71` tokens/sec; worst p99: `0.6` -> `185.442` ms
-- `shared_kv_ratio` best throughput: `0.85` -> `5.68` tokens/sec; worst p99: `0.3` -> `179.606` ms
-- `sram_capacity_mb` best throughput: `1024.0` -> `5.73` tokens/sec; worst p99: `256.0` -> `184.550` ms
-- `traffic_burst_factor` best throughput: `1.0` -> `5.68` tokens/sec; worst p99: `3.0` -> `209.359` ms
-- `tsv_uplink_bw_gbs` best throughput: `5800.0` -> `6.68` tokens/sec; worst p99: `2800.0` -> `228.247` ms
+- `base_die_xbar_bw_gbs` best throughput: `6800.0` -> `4.25` tokens/sec; worst p99: `4200.0` -> `279.961` ms
+- `batch_size` best throughput: `16` -> `8.07` tokens/sec; worst p99: `256` -> `255.475` ms
+- `bridge_bw_gbs` best throughput: `6400.0` -> `4.47` tokens/sec; worst p99: `3200.0` -> `288.777` ms
+- `context_len` best throughput: `1024` -> `4.13` tokens/sec; worst p99: `16384` -> `253.464` ms
+- `hbf_latency_us` best throughput: `4.0` -> `4.11` tokens/sec; worst p99: `12.0` -> `248.404` ms
+- `kv_chunk_size_kb` best throughput: `64` -> `4.16` tokens/sec; worst p99: `512` -> `267.989` ms
+- `multi_tenant_users` best throughput: `32` -> `4.93` tokens/sec; worst p99: `384` -> `666.322` ms
+- `num_experts` best throughput: `16` -> `4.11` tokens/sec; worst p99: `128` -> `248.391` ms
+- `prefetch_accuracy` best throughput: `0.95` -> `4.15` tokens/sec; worst p99: `0.6` -> `263.534` ms
+- `shared_kv_ratio` best throughput: `0.85` -> `4.11` tokens/sec; worst p99: `0.3` -> `248.589` ms
+- `sram_capacity_mb` best throughput: `1024.0` -> `4.19` tokens/sec; worst p99: `256.0` -> `263.952` ms
+- `traffic_burst_factor` best throughput: `1.0` -> `4.11` tokens/sec; worst p99: `3.0` -> `301.631` ms
+- `tsv_uplink_bw_gbs` best throughput: `5800.0` -> `4.45` tokens/sec; worst p99: `2800.0` -> `308.378` ms
 
 ## 9. Artifacts
 - Sweep CSV (agg/raw): `results/sim/sweep_*.csv`, `results/sim/sweep_*_raw.csv`

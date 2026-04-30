@@ -1,11 +1,11 @@
 # Sweep Summary: context_len
-best_throughput: context_len=1024 -> 5.71 tokens/sec
-worst_p99_tail: context_len=16384 -> 182.813 ms
-worst_memory_bottleneck: context_len=16384 -> 96.42%
+best_throughput: context_len=1024 -> 4.13 tokens/sec
+worst_p99_tail: context_len=16384 -> 253.464 ms
+worst_memory_bottleneck: context_len=16384 -> 97.42%
 
 detailed_points:
-context_len=1024: tps=5.71, lat=175.193ms, p99=178.644ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.482, model_err=24.02%
-context_len=2048: tps=5.70, lat=175.465ms, p99=178.921ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.511, model_err=24.11%
-context_len=4096: tps=5.68, lat=176.009ms, p99=179.476ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.560, model_err=24.29%
-context_len=8192: tps=5.65, lat=177.099ms, p99=180.587ms, tail_ratio=1.020, bridge_util=0.331, tsv_util=0.473, overlap=0.035, reuse=0.633, model_err=24.66%
-context_len=16384: tps=5.58, lat=179.281ms, p99=182.813ms, tail_ratio=1.020, bridge_util=0.331, tsv_util=0.473, overlap=0.034, reuse=0.725, model_err=25.37%
+context_len=1024: tps=4.13, lat=242.350ms, p99=247.125ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.300, overlap=0.027, reuse=0.482, model_err=26.67%
+context_len=2048: tps=4.12, lat=242.763ms, p99=247.546ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.300, overlap=0.027, reuse=0.511, model_err=26.77%
+context_len=4096: tps=4.11, lat=243.590ms, p99=248.389ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.300, overlap=0.027, reuse=0.560, model_err=26.97%
+context_len=8192: tps=4.08, lat=245.246ms, p99=250.078ms, tail_ratio=1.020, bridge_util=0.239, tsv_util=0.300, overlap=0.026, reuse=0.633, model_err=27.36%
+context_len=16384: tps=4.02, lat=248.567ms, p99=253.464ms, tail_ratio=1.020, bridge_util=0.239, tsv_util=0.299, overlap=0.026, reuse=0.725, model_err=28.14%

@@ -366,6 +366,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
             t_tsv_nominal = sec_from_bytes(tsv_bytes, tsv_effective_bw_gbs)
             t_tsv = t_tsv_nominal * tsv_contention * jitter
             t_pkg_path = t_base_route + t_tsv + pkg_const_latency_s
+            t_ring_to_compute = t_bridge + t_pkg_path
             t_compute = layer_ops / compute_ops_per_sec
 
             lhb_absorb = 0.0
@@ -392,7 +393,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
                 t_compute *= (1.0 + throttle)
                 thermal_trace.append(thermal_c)
 
-            critical_mem = max(t_hbm, t_hbf + hbf_miss_penalty, t_bridge, t_pkg_path)
+            critical_mem = max(t_hbm, t_hbf + hbf_miss_penalty, t_ring_to_compute)
             overlap_time = max(t_compute, critical_mem) + hbf_miss_penalty
 
             sram_pressure = (
@@ -402,7 +403,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
             ) / max(mb_to_bytes(cfg.sram_capacity_mb), 1.0)
             sram_hit = max(0.2, min(0.99, cfg.prefetch_accuracy - 0.22 * max(0.0, sram_pressure - 0.35)))
             # Exposed refill penalty when SRAM staging is under-provisioned.
-            sram_exposed_penalty = (1.0 - sram_hit) * 0.20 * max(t_hbm, t_bridge)
+            sram_exposed_penalty = (1.0 - sram_hit) * 0.20 * max(t_hbm, t_ring_to_compute)
 
             # Routing and queueing overhead
             routing_overhead = (0.5e-6 + active_expert_fraction * 1.0e-6) * (1.0 + 0.12 * max(0.0, burst_mult - 1.0))
@@ -440,8 +441,7 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
                     "compute": t_compute,
                     "hbm": t_hbm,
                     "hbf": t_hbf + hbf_miss_penalty,
-                    "bridge": t_bridge,
-                    "tsv": t_pkg_path,
+                    "ring_path": t_ring_to_compute,
                     "router": routing_overhead,
                 }.items(),
                 key=lambda kv: kv[1],
@@ -453,10 +453,10 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
                 b_hbm += layer_time
             elif dominant_bucket == "hbf":
                 b_hbf += layer_time
-            elif dominant_bucket == "bridge":
-                b_bridge += layer_time
-            elif dominant_bucket == "tsv":
-                b_tsv += layer_time
+            elif dominant_bucket == "ring_path":
+                ring_denom = max(t_ring_to_compute, 1e-12)
+                b_bridge += layer_time * _safe_div(t_bridge, ring_denom)
+                b_tsv += layer_time * _safe_div(t_pkg_path, ring_denom)
             else:
                 b_router += layer_time
 
@@ -502,8 +502,8 @@ def run_simulation(cfg: AFOConfig, num_tokens: int = 64) -> dict:
         sec_from_bytes(layer_bytes["unique_kv_fetch_bytes"] + layer_bytes["metadata_bytes"], cfg.hbm_bw_gbs),
         sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"], cfg.hbf_bw_gbs)
         + miss_rate * (cfg.hbf_latency_us * 1e-6),
-        sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"], cfg.bridge_bw_gbs),
-        sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"], cfg.base_die_xbar_bw_gbs)
+        sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"], cfg.bridge_bw_gbs)
+        + sec_from_bytes(layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"], cfg.base_die_xbar_bw_gbs)
         + sec_from_bytes(
             (layer_bytes["dense_layer_bytes"] + layer_bytes["expert_layer_bytes"] + layer_bytes["unique_kv_fetch_bytes"])
             * (1.0 + max(0.0, cfg.tsv_protocol_overhead)),

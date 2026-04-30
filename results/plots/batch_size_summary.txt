@@ -1,11 +1,11 @@
 # Sweep Summary: batch_size
-best_throughput: batch_size=16 -> 10.93 tokens/sec
-worst_p99_tail: batch_size=256 -> 184.133 ms
-worst_memory_bottleneck: batch_size=16 -> 99.12%
+best_throughput: batch_size=16 -> 8.07 tokens/sec
+worst_p99_tail: batch_size=256 -> 255.475 ms
+worst_memory_bottleneck: batch_size=16 -> 99.35%
 
 detailed_points:
-batch_size=16: tps=10.93, lat=91.477ms, p99=93.278ms, tail_ratio=1.020, bridge_util=0.337, tsv_util=0.482, overlap=0.009, reuse=0.000, model_err=21.65%
-batch_size=32: tps=7.40, lat=135.098ms, p99=137.760ms, tail_ratio=1.020, bridge_util=0.334, tsv_util=0.478, overlap=0.012, reuse=0.000, model_err=22.47%
-batch_size=64: tps=5.76, lat=173.733ms, p99=177.155ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.018, reuse=0.120, model_err=23.38%
-batch_size=128: tps=5.68, lat=176.009ms, p99=179.476ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.560, model_err=24.29%
-batch_size=256: tps=5.54, lat=180.575ms, p99=184.133ms, tail_ratio=1.020, bridge_util=0.331, tsv_util=0.473, overlap=0.068, reuse=0.780, model_err=26.06%
+batch_size=16: tps=8.07, lat=123.873ms, p99=126.313ms, tail_ratio=1.020, bridge_util=0.249, tsv_util=0.312, overlap=0.007, reuse=0.000, model_err=22.75%
+batch_size=32: tps=5.41, lat=184.964ms, p99=188.608ms, tail_ratio=1.020, bridge_util=0.244, tsv_util=0.306, overlap=0.009, reuse=0.000, model_err=24.40%
+batch_size=64: tps=4.16, lat=240.136ms, p99=244.867ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.301, overlap=0.014, reuse=0.120, model_err=26.00%
+batch_size=128: tps=4.11, lat=243.590ms, p99=248.389ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.300, overlap=0.027, reuse=0.560, model_err=26.97%
+batch_size=256: tps=3.99, lat=250.538ms, p99=255.475ms, tail_ratio=1.020, bridge_util=0.238, tsv_util=0.299, overlap=0.052, reuse=0.780, model_err=28.85%

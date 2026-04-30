@@ -9,10 +9,10 @@
 <line x1="110" y1="460.0" x2="940" y2="460.0" stroke="#e5e7eb" />
   <line x1="110" y1="460" x2="940" y2="460" stroke="#333" />
   <line x1="110" y1="50" x2="110" y2="460" stroke="#333" />
-  <polyline fill="none" stroke="#1d4ed8" stroke-width="2.6" points="110.0,50.0 228.6,112.4 465.7,233.3 940.0,460.0" />
+  <polyline fill="none" stroke="#1d4ed8" stroke-width="2.6" points="110.0,50.0 228.6,112.5 465.7,233.5 940.0,460.0" />
   <circle cx="110.0" cy="50.0" r="4.5" fill="#1d4ed8" />
-<circle cx="228.6" cy="112.4" r="4.5" fill="#1d4ed8" />
-<circle cx="465.7" cy="233.3" r="4.5" fill="#1d4ed8" />
+<circle cx="228.6" cy="112.5" r="4.5" fill="#1d4ed8" />
+<circle cx="465.7" cy="233.5" r="4.5" fill="#1d4ed8" />
 <circle cx="940.0" cy="460.0" r="4.5" fill="#1d4ed8" />
   <text x="110.0" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">64</text>
 <text x="228.6" y="484.0" text-anchor="middle" font-size="12" font-family="Times New Roman">128</text>

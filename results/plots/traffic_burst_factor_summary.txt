@@ -1,11 +1,11 @@
 # Sweep Summary: traffic_burst_factor
-best_throughput: traffic_burst_factor=1.0 -> 5.68 tokens/sec
-worst_p99_tail: traffic_burst_factor=3.0 -> 209.359 ms
-worst_memory_bottleneck: traffic_burst_factor=3.0 -> 96.58%
+best_throughput: traffic_burst_factor=1.0 -> 4.11 tokens/sec
+worst_p99_tail: traffic_burst_factor=3.0 -> 301.631 ms
+worst_memory_bottleneck: traffic_burst_factor=3.0 -> 97.58%
 
 detailed_points:
-traffic_burst_factor=1.0: tps=5.68, lat=176.009ms, p99=179.476ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.560, model_err=24.29%
-traffic_burst_factor=1.5: tps=5.56, lat=179.824ms, p99=185.517ms, tail_ratio=1.032, bridge_util=0.325, tsv_util=0.464, overlap=0.035, reuse=0.560, model_err=25.90%
-traffic_burst_factor=2.0: tps=5.45, lat=183.646ms, p99=193.265ms, tail_ratio=1.053, bridge_util=0.318, tsv_util=0.454, overlap=0.035, reuse=0.560, model_err=27.44%
-traffic_burst_factor=2.5: tps=5.33, lat=187.460ms, p99=201.350ms, tail_ratio=1.076, bridge_util=0.311, tsv_util=0.445, overlap=0.035, reuse=0.560, model_err=28.92%
-traffic_burst_factor=3.0: tps=5.23, lat=191.270ms, p99=209.359ms, tail_ratio=1.097, bridge_util=0.305, tsv_util=0.436, overlap=0.034, reuse=0.560, model_err=30.33%
+traffic_burst_factor=1.0: tps=4.11, lat=243.590ms, p99=248.389ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.300, overlap=0.027, reuse=0.560, model_err=26.97%
+traffic_burst_factor=1.5: tps=4.00, lat=250.264ms, p99=259.373ms, tail_ratio=1.037, bridge_util=0.233, tsv_util=0.292, overlap=0.027, reuse=0.560, model_err=28.92%
+traffic_burst_factor=2.0: tps=3.89, lat=256.945ms, p99=273.331ms, tail_ratio=1.065, bridge_util=0.227, tsv_util=0.284, overlap=0.026, reuse=0.560, model_err=30.77%
+traffic_burst_factor=2.5: tps=3.79, lat=263.619ms, p99=287.459ms, tail_ratio=1.093, bridge_util=0.221, tsv_util=0.277, overlap=0.026, reuse=0.560, model_err=32.52%
+traffic_burst_factor=3.0: tps=3.70, lat=270.289ms, p99=301.631ms, tail_ratio=1.119, bridge_util=0.216, tsv_util=0.270, overlap=0.026, reuse=0.560, model_err=34.18%

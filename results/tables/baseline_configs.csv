@@ -1,9 +1,9 @@
 baseline,description,shared_kv_ratio,weight_hbf_fraction,prefetch_accuracy,matrix_efficiency,routing_diversity,lhb_enable,lhb_size_mb,prefetch_depth,batch_size,context_len,kv_chunk_size_kb,hbm_bw_gbs,hbf_bw_gbs,bridge_bw_gbs,tsv_uplink_bw_gbs,base_die_xbar_bw_gbs
-AFO_full,A.F.O full mechanism (tier-locality + route-aware shared KV + overlap contract),0.75,1.0,0.97,0.86,0.25,1,96.0,2,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-HBM_only_GPU,HBM-centric decode path without shared KV reuse,0.0,0.0,0.78,0.64,0.58,0,32.0,1,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-MoSKA_only,Shared/Unique KV split and routing; no H3 placement (weights mostly HBM),0.62,0.0,0.9,0.79,0.28,1,64.0,1,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-H3_only,HBM/HBF tiering enabled but weak shared-KV batching,0.35,1.0,0.84,0.58,0.56,1,48.0,1,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-Apple_like_UMA,UMA-like policy without route-aware chunk reuse,0.25,0.4,0.74,0.66,0.6,0,32.0,1,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-vLLM_like,Paged-KV style runtime policy baseline (synthetic 'like'),0.4,0.0,0.91,0.8,0.42,1,72.0,2,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-FlashAttn_like,Kernel-optimized attention baseline (synthetic 'like'),0.15,0.0,0.88,0.84,0.5,0,32.0,1,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
-TensorRTLLM_like,Kernel fusion + scheduler baseline (synthetic 'like'),0.3,0.1,0.93,0.83,0.4,1,80.0,2,128,4096,128,6400.0,4800.0,4800.0,4200.0,5600.0
+AFO_full,A.F.O full mechanism (tier-locality + route-aware shared KV + overlap contract),0.75,1.0,0.97,0.86,0.25,1,96.0,2,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+HBM_only_GPU,HBM-centric decode path without shared KV reuse,0.0,0.0,0.78,0.64,0.58,0,32.0,1,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+MoSKA_only,Shared/Unique KV split and routing; no H3 placement (weights mostly HBM),0.62,0.0,0.9,0.79,0.28,1,64.0,1,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+H3_only,HBM/HBF tiering enabled but weak shared-KV batching,0.35,1.0,0.84,0.58,0.56,1,48.0,1,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+Apple_like_UMA,UMA-like policy without route-aware chunk reuse,0.25,0.4,0.74,0.66,0.6,0,32.0,1,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+vLLM_like,Paged-KV style runtime policy baseline (synthetic 'like'),0.4,0.0,0.91,0.8,0.42,1,72.0,2,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+FlashAttn_like,Kernel-optimized attention baseline (synthetic 'like'),0.15,0.0,0.88,0.84,0.5,0,32.0,1,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0
+TensorRTLLM_like,Kernel fusion + scheduler baseline (synthetic 'like'),0.3,0.1,0.93,0.83,0.4,1,80.0,2,128,4096,128,6400.0,4800.0,4800.0,4600.0,6000.0

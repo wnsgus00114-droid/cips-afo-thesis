@@ -1,11 +1,11 @@
 # Sweep Summary: sram_capacity_mb
-best_throughput: sram_capacity_mb=1024.0 -> 5.73 tokens/sec
-worst_p99_tail: sram_capacity_mb=256.0 -> 184.550 ms
-worst_memory_bottleneck: sram_capacity_mb=256.0 -> 96.45%
+best_throughput: sram_capacity_mb=1024.0 -> 4.19 tokens/sec
+worst_p99_tail: sram_capacity_mb=256.0 -> 263.952 ms
+worst_memory_bottleneck: sram_capacity_mb=256.0 -> 97.52%
 
 detailed_points:
-sram_capacity_mb=256.0: tps=5.53, lat=180.985ms, p99=184.550ms, tail_ratio=1.020, bridge_util=0.322, tsv_util=0.461, overlap=0.033, reuse=0.560, model_err=26.37%
-sram_capacity_mb=384.0: tps=5.53, lat=180.985ms, p99=184.550ms, tail_ratio=1.020, bridge_util=0.322, tsv_util=0.461, overlap=0.033, reuse=0.560, model_err=26.37%
-sram_capacity_mb=512.0: tps=5.58, lat=179.161ms, p99=182.690ms, tail_ratio=1.020, bridge_util=0.326, tsv_util=0.465, overlap=0.034, reuse=0.560, model_err=25.62%
-sram_capacity_mb=768.0: tps=5.68, lat=176.009ms, p99=179.476ms, tail_ratio=1.020, bridge_util=0.332, tsv_util=0.474, overlap=0.035, reuse=0.560, model_err=24.29%
-sram_capacity_mb=1024.0: tps=5.73, lat=174.433ms, p99=177.870ms, tail_ratio=1.020, bridge_util=0.335, tsv_util=0.478, overlap=0.036, reuse=0.560, model_err=23.61%
+sram_capacity_mb=256.0: tps=3.86, lat=258.852ms, p99=263.952ms, tail_ratio=1.020, bridge_util=0.225, tsv_util=0.282, overlap=0.025, reuse=0.560, model_err=31.28%
+sram_capacity_mb=384.0: tps=3.86, lat=258.852ms, p99=263.952ms, tail_ratio=1.020, bridge_util=0.225, tsv_util=0.282, overlap=0.025, reuse=0.560, model_err=31.28%
+sram_capacity_mb=512.0: tps=3.95, lat=253.256ms, p99=258.246ms, tail_ratio=1.020, bridge_util=0.230, tsv_util=0.289, overlap=0.025, reuse=0.560, model_err=29.76%
+sram_capacity_mb=768.0: tps=4.11, lat=243.590ms, p99=248.389ms, tail_ratio=1.020, bridge_util=0.240, tsv_util=0.300, overlap=0.027, reuse=0.560, model_err=26.97%
+sram_capacity_mb=1024.0: tps=4.19, lat=238.757ms, p99=243.461ms, tail_ratio=1.020, bridge_util=0.244, tsv_util=0.306, overlap=0.027, reuse=0.560, model_err=25.49%
