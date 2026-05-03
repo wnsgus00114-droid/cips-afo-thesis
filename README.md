@@ -1,127 +1,98 @@
 # A.F.O (All For One)
 
-유한 대역폭 환경에서 장문맥 LLM 추론의 병목을 분석하기 위한 아키텍처/패키징 중심 연구 저장소입니다.
+**Mechanism-Driven 3D Compute-Memory Architecture for LLM Inference Under Finite Bandwidth Constraints**
 
-## 핵심 요약
-- A.F.O는 단순 3D 적층 가정이 아니라, `Active Base Die + 중앙 3D TSV + 외곽 2.5D 메모리 링` 토폴로지를 명시적으로 모델링합니다.
-- 실험은 다중 시드, 스트레스 시나리오, 공정성(Fairness) 계약, sanity 검증까지 포함합니다.
-- 최신 캘리브레이션 재실험에서 bridge/TSV 병목 기여가 분리되어 관측됩니다(예: baseline 평균 `bridge 32.60% / tsv 67.40%`).
+- Author: **JunHyeonBeak**
+- Affiliation: **Department of Electronic Engineering, Kwangwoon University**
+- Email: **fhzk1022@naver.com**
+- Final thesis file: [AFO_Archive_Thesis_JunHyeonBeak_v18_userfig_rebuild.docx](docs/final_paper/AFO_Archive_Thesis_JunHyeonBeak_v18_userfig_rebuild.docx)
 
-## 논문 Figure 미리보기
+## Abstract
+A.F.O는 장문맥 LLM 추론에서 반복적으로 발생하는 memory wall과 tail-latency 불안정성을 해결하기 위해, 패키징 계층(Top compute, Bottom memory-support die), 메모리 계층(HBM inner ring + HBF outer ring), 실행 계층(shared/unique KV 분리 + prefetch overlap)을 실행 계약(contract)으로 결합한 아키텍처입니다. 핵심은 부품의 단순 조합이 아니라, **finite bandwidth 조건에서 병목 이동(bottleneck migration)을 제어 가능한 메커니즘으로 강제**하는 데 있습니다.
 
-### Figure 1. Chip-level 3D (Active Base Die)
-![Figure 1](fig/f1.png)
+## 1. Problem Statement
+- F1: bridge queue residency 증가로 인한 tail 폭발
+- F2: shared KV 재사용 실패로 인한 GEMM 효율 저하
+- F3: prefetch 부정확 + HBF miss 노출로 인한 layer 경계 stall
+
+## 2. Thesis Claim
+A.F.O는 **not composition, but enforced mechanism** 원칙으로 동작합니다.
+- tier-local placement
+- deterministic overlap
+- route-aware contention control
+
+## 3. Architecture Summary
+- Layer 1 (Top): compute die (CPU/GPU-like SIMT/NPU, SRAM A/B + LHB, DMA/prefetch, KV scheduler, MoE router)
+- Layer 2 (Bottom): active base die + inner HBM rectangular ring + outer HBF rectangular ring
+- Data path: memory periphery ingress -> base-die route -> inter-tier uplink neck -> SRAM -> compute
+- Inter-tier candidate set: TSV / Hybrid Bonding / 2.5D Interposer / M3D / Optical
+
+## 4. Analytical Model
+\[
+T_{layer}=\max(T_{compute},T_{HBM},T_{HBF}+\Delta_{miss},T_{bridge})+T_{router}+T_{SRAM\_exposed}
+\]
+\[
+\Delta_{miss}=(1-p_{pref})(1-h_{lhb})(L_{HBF}+\beta T_{HBF}),\quad
+Overlap_{eff}=1-\frac{exposed\_wait}{T_{mem\_crit}}
+\]
+\[
+G_{batch}=\frac{Requests_{chunked}}{Unique_{chunks}},\quad
+Reuse=1-\frac{Unique_{chunks}}{Requests_{chunked}}
+\]
+
+## 5. Figures (Paper-Aligned)
+
+### Figure 1. Chip-level 3D Topology
+![Figure 1](assets/readme_figures/figure1_chip_3d.png)
 
 ### Figure 2. System-level 3D Deployment
-![Figure 2](fig/f2.png)
+![Figure 2](assets/readme_figures/figure2_system_3d.png)
 
-### Figure 3. Memory Map + Banking + Replay
-![Figure 3](fig/f3.png)
+### Figure 3. Memory Map + SRAM Banking
+![Figure 3](assets/readme_figures/figure3_memory_map.png)
 
-### Figure 4. Layer Pipeline Timeline
-![Figure 4](fig/f4.png)
+### Figure 4. Layer Overlap Pipeline
+![Figure 4](assets/readme_figures/figure4_pipeline.png)
 
-### Figure 5. Experiment Evidence Panels
-![Figure 5](fig/f5.png)
+### Figure 5. Core Evidence Panels
+![Figure 5](assets/readme_figures/figure5_core_panels.png)
 
-## 1) 물리 구현 가능성(Feasibility) 정의
+### Figure 6. Interconnect 5-way Comparison
+![Figure 6](assets/readme_figures/figure6_interconnect.png)
 
-본 리포지토리는 아래 패키징 계약을 고정 가정으로 사용합니다.
+### Figure 7. Tail-Latency Root-Cause Waterfall
+![Figure 7](assets/readme_figures/figure7_tail_root_cause.png)
 
-- `Top / Layer1`: 중앙 compute chiplet (3D hybrid bonding)
-- `Bottom / Layer2`: Active Base Die (logic interposer)
-- Layer2 periphery: inner HBM ring + outer HBF ring (2.5D micro-bump 실장)
-- 핵심 경로: `ring ingress -> base-die lateral route -> central TSV neck -> SRAM staging`
+### Figure 8. Thermal-Performance Coupling
+![Figure 8](assets/readme_figures/figure8_thermal.png)
 
-이 구조는 최신 3D/3.5D 통합 패키징 흐름(예: SoIC/Foveros 계열)에서 논의되는 병목 특성과 정합되며, 본 연구의 소프트웨어 스케줄링 필요성을 하드웨어 병목 관점에서 정당화합니다.
+### Figure 9. Mechanism-to-Evidence Causal Map
+![Figure 9](assets/readme_figures/figure9_causal_map.png)
 
-## 2) 최신 실험 헤드라인 (재실행 결과)
+### Figure 10. Cold-start Harsh Condition (p_pref -> 0)
+![Figure 10](assets/readme_figures/figure10_coldstart_p99.svg)
 
-- Baseline 최고 처리량: `AFO_full = 4.16 tok/s`
-- Baseline 최소 p99: `AFO_full = 244.814 ms`
-- HBM-only 대비: `AFO_full`가 처리량/꼬리 지연 모두 우세
-  - `4.16 vs 4.02 tok/s`, `244.814 vs 253.845 ms`
-- 최악 스트레스 tail: `worst_case_tail p99 = 1579.098 ms`
-- 최악 bridge contention: `133816.345 ms`
-- TSV neck 압박 시나리오: `nominal p99 248.389 ms -> tsv_neck_pressure p99 943.414 ms`
-- Simulator sanity: `9 PASS / 0 FAIL`
+## 6. Key Results Snapshot
+- Baseline set: `AFO_Proposed`, `HBM_GPU_Baseline`, `H3_Hybrid_Memory_Baseline`, `Apple_UMA_Baseline`
+- Interconnect set: `TSV`, `Hybrid Bonding`, `2.5D Interposer`, `M3D`, `Optical`
+- Stress/tail 실험에서 bridge + inter-tier neck이 주요 지배 병목으로 관측됨
 
-병목 기여 분해(캘리브레이션 결과):
-- Baseline(AFO_full): `bridge 32.60%`, `tsv 67.40%`
-- Worst-case tail: `bridge 49.51%`, `tsv 50.49%`
-
-주요 민감도(Reviewer critical):
-- `corr(bridge_bw_gbs, latency_p99_ms) = -0.979`
-- `corr(tsv_uplink_bw_gbs, latency_p99_ms) = -0.975`
-- `corr(prefetch_accuracy, overlap_efficiency) = 1.000`
-
-## 3) 빠른 재현
-
-### 환경 준비
+## 7. Reproducibility
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
-### 전체 실험 파이프라인 (권장)
-```bash
 bash scripts/run_all.sh
+python3 experiments/scripts/compare_interconnect_techs.py --num-tokens 256 --seeds 11,23,37,53,79
+python3 experiments/scripts/coldstart_prefetch_collapse.py
 ```
 
-### 수동 단계 실행
-```bash
-python3 experiments/scripts/run_sweeps.py --config experiments/configs/base.json --num-tokens 256 --seeds 11,23,37
-python3 experiments/scripts/gen_baselines.py
-python3 experiments/scripts/plot_results.py
-python3 experiments/scripts/sanity_validate.py
-python3 experiments/scripts/analyze_results.py
-python3 experiments/scripts/make_summary.py
-```
+## 8. Result Paths
+- Summary: [results/summary/simulation_summary.md](results/summary/simulation_summary.md)
+- Baselines: [results/tables/baseline_comparison.md](results/tables/baseline_comparison.md)
+- Interconnect comparison: [results/tables/interconnect_tech_comparison.md](results/tables/interconnect_tech_comparison.md)
+- Cold-start harsh result: [results/coldstart/summary/coldstart_prefetch_collapse_summary.md](results/coldstart/summary/coldstart_prefetch_collapse_summary.md)
 
-### 스모크/CI 체크
-```bash
-bash scripts/check_all.sh
-```
-
-## 4) 핵심 결과 아티팩트
-
-- 종합 요약: [results/summary/simulation_summary.md](results/summary/simulation_summary.md)
-- Baseline 비교: [results/tables/baseline_comparison.md](results/tables/baseline_comparison.md)
-- Baseline 공정성: [results/tables/baseline_fairness.md](results/tables/baseline_fairness.md)
-- Sweep 요약: [results/tables/sweep_summary.md](results/tables/sweep_summary.md)
-- Sanity 검증: [results/tables/simulator_sanity_checks.md](results/tables/simulator_sanity_checks.md)
-- 인과 분석: [results/summary/causal_chain_analysis.md](results/summary/causal_chain_analysis.md)
-- Tail 원인 분석: [results/summary/tail_latency_root_cause.md](results/summary/tail_latency_root_cause.md)
-- Thermal 영향 분석: [results/summary/thermal_impact_analysis.md](results/summary/thermal_impact_analysis.md)
-- 민감도 패널: [results/tables/key_sensitivity_panels.md](results/tables/key_sensitivity_panels.md)
-
-## 5) Baseline Fairness 정책
-
-모든 baseline은 아래를 동일하게 고정합니다.
-
-- workload: batch/context/chunk
-- capacity: HBM/HBF/SRAM
-- link: HBM BW, HBF BW, Bridge BW, HBF latency
-- package-neck: TSV BW, Base-die BW, TSV util cap
-
-변동 허용 항목(정책/알고리즘 knob):
-- shared KV ratio
-- HBF weight fraction
-- prefetch accuracy
-- routing diversity
-- LHB/prefetch depth
-- matrix efficiency
-
-## 6) 저장소 맵
-
-- 아키텍처 문서: [docs/architecture/afo_system_overview.md](docs/architecture/afo_system_overview.md)
-- 구현 문서: [docs/implementation/dataflow.md](docs/implementation/dataflow.md), [docs/implementation/runtime_software_design.md](docs/implementation/runtime_software_design.md)
-- 실험 스크립트: [experiments/scripts](experiments/scripts)
-- 시뮬레이터: [sim/afo_simulator.py](sim/afo_simulator.py)
-- 결과 폴더: [results](results)
-
-## 7) 한계와 해석 범위
-
-- `vLLM_like`, `FlashAttn_like`, `TensorRTLLM_like`는 정책 수준의 synthetic baseline입니다.
-- 본 결과는 아키텍처 경향성 및 병목 인과 분석 목적이며, 실측 실리콘 수치와 동일시하면 안 됩니다.
-- 하드웨어 publication 수준 claim에는 추가 RTL/FPGA/실측 검증이 필요합니다.
+## 9. Scope and Limitations
+- synthetic cycle-inspired simulator 기반
+- interconnect 수치는 architecture sensitivity mapping (foundry signoff 아님)
+- full-chip silicon-ready signoff가 아닌 architecture feasibility 단계

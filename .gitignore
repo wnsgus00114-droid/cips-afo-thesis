@@ -30,3 +30,7 @@ rtl/obj_dir/
 
 # Local-only final paper package (must not be pushed)
 result_paper/
+
+# User-requested local-only folders (must not be pushed)
+fig/
+thesis/
