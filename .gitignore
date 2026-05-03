@@ -32,5 +32,4 @@ rtl/obj_dir/
 result_paper/
 
 # User-requested local-only folders (must not be pushed)
-fig/
 thesis/
