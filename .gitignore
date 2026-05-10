@@ -33,3 +33,8 @@ result_paper/
 
 # User-requested local-only folders (must not be pushed)
 thesis/
+
+# User-requested paper/template folders (must not be pushed)
+paper22/
+paper!!!!!!/
+elsarticle/

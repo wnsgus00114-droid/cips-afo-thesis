@@ -1,0 +1,43 @@
+{
+  "profiles": [
+    {
+      "name": "sharegpt_vllm_fig11",
+      "description": "ShareGPT token-length profile anchored to vLLM/PagedAttention Figure 11 means.",
+      "prompt_mean_tokens": 161.31,
+      "output_mean_tokens": 337.99,
+      "prompt_lognorm_sigma": 1.0,
+      "output_lognorm_sigma": 0.95,
+      "tail_mix_prob": 0.08,
+      "tail_pareto_alpha": 2.1,
+      "max_prompt_tokens": 4096,
+      "max_output_tokens": 2048,
+      "arrival_process": "poisson",
+      "arrival_rate_rps": 2.0,
+      "source_notes": [
+        "vLLM (SOSP 2023): Figure 11 reports ShareGPT input/output mean lengths.",
+        "vLLM workload synthesis states request arrivals are generated via Poisson process.",
+        "Reference URLs: https://arxiv.org/abs/2309.06180"
+      ]
+    },
+    {
+      "name": "sharegpt_distserve_fig7",
+      "description": "ShareGPT chatbot profile anchored to DistServe Figure 7 means.",
+      "prompt_mean_tokens": 755.5,
+      "output_mean_tokens": 200.3,
+      "prompt_lognorm_sigma": 0.85,
+      "output_lognorm_sigma": 0.80,
+      "tail_mix_prob": 0.10,
+      "tail_pareto_alpha": 1.9,
+      "max_prompt_tokens": 8192,
+      "max_output_tokens": 2048,
+      "arrival_process": "poisson",
+      "arrival_rate_rps": 2.0,
+      "source_notes": [
+        "DistServe (OSDI 2024): Figure 7 reports ShareGPT input/output means (input=755.5, output=200.3).",
+        "DistServe setup states arrivals are generated via Poisson process when timestamps are absent.",
+        "Reference URLs: https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf"
+      ]
+    }
+  ]
+}
+
