@@ -12,11 +12,7 @@ This repository is prepared for **double-blind artifact evaluation**.
 - Publish through:
   - `https://anonymous.4open.science/`, or
   - a neutral artifact account/org.
-- Keep local manuscript folders out of public artifact pushes:
-  - `paper22/`
-  - `paper!!!!!!/`
-  - `paper!@!/`
-  - `elsarticle/`
+- Keep private manuscript/template work directories out of public artifact pushes (enforced by `.gitignore`).
 
 ---
 
@@ -30,6 +26,19 @@ Main comparison target:
 
 The goal is **not** to claim universal peak throughput.  
 The goal is to show how bottlenecks migrate across bridge/inter-tier/queue/fabric paths and how A.F.O control hooks respond.
+
+### Current Paper-Aligned Numeric Anchor (for consistency)
+
+To avoid confusion with older draft snapshots, this repository uses the following **current revision anchor numbers**:
+
+- Nominal single-device envelope (`bridge = 4800 GB/s`)
+  - `AFO_Proposed`: **1295.91 tok/s**, p99 modeled memory-path latency **0.309867 ms**
+  - `HBM_GPU-class_Server_Baseline`: **1219.15 tok/s**, p99 modeled memory-path latency **0.299515 ms**
+- Distribution-matched serving-like envelopes (ShareGPT-style / DistServe-style):
+  - throughput delta: **+7.04% / +7.26%** (A.F.O vs baseline)
+  - p99 modeled memory-path latency delta: **-7.30% / -7.81%**
+
+If you see legacy values (e.g., old CAL-scale numbers) in historical branches or archived drafts, treat those as superseded.
 
 ---
 
@@ -269,10 +278,7 @@ Avoid:
 
 ## 9) Local-Only Directories (Do Not Push)
 
-- `paper22/`
-- `paper!!!!!!/`
-- `paper!@!/`
-- `elsarticle/`
+Private manuscript/template build directories are excluded from artifact publication via `.gitignore`. Keep public pushes focused on reproducibility code, configs, and result assets only.
 
 ---
 
