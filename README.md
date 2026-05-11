@@ -276,9 +276,9 @@ Avoid:
 
 ---
 
-## 9) Local-Only Directories (Do Not Push)
+## 9) Local Manuscript Draft Policy
 
-Private manuscript/template build directories are excluded from artifact publication via `.gitignore`. Keep public pushes focused on reproducibility code, configs, and result assets only.
+Local manuscript drafts and template build directories are excluded from artifact publication via `.gitignore`. Keep public pushes focused on reproducibility code, configs, and result assets only.
 
 ---
 
