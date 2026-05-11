@@ -1,112 +1,161 @@
-# A.F.O (All For One)
+# A.F.O Artifact (Anonymous Review Ready)
 
 Bridge-Sensitive Hierarchical Memory Staging for Bandwidth-Constrained LLM Inference
 
-- Author: JunHyeon Beak
-- Contact: wnsgus00114@gmail.com
+---
+
+## 1) Anonymity Policy (Critical)
+
+This repository is prepared for **double-blind artifact evaluation**.
+
+- Do **not** expose personal identity in artifact links, release notes, or README text.
+- Publish through:
+  - `https://anonymous.4open.science/`, or
+  - a neutral artifact account/org.
+- Keep local manuscript folders out of public artifact pushes:
+  - `paper22/`
+  - `paper!!!!!!/`
+  - `paper!@!/`
+  - `elsarticle/`
 
 ---
 
-## 1. Project Goal
+## 2) What This Artifact Shows
 
-This repository studies **where LLM inference bottlenecks actually come from** and how they move across memory paths under stress.
+This artifact is designed to evaluate **bridge-sensitive bottleneck attribution/control** in hierarchical LLM memory paths.
 
-Core message:
+Main comparison target:
+- `AFO_Proposed`
+- `HBM_GPU-class_Server_Baseline` (host + system memory + host-device path + GPU-local HBM class-level baseline)
 
-- A.F.O is **not** positioned as a universal peak-throughput winner.
-- A.F.O is a **bridge-sensitive hierarchical staging + bottleneck attribution/control framework**.
-- "Bridge bottleneck" in this repo means an **internal package-path bottleneck inside the modeled A.F.O architecture envelope**.
-
----
-
-## 2. Repository Policy (Important)
-
-The following folders are local writing/template workspaces and are excluded from remote uploads:
-
-- `paper22/`
-- `paper!!!!!!/`
-- `elsarticle/`
+The goal is **not** to claim universal peak throughput.  
+The goal is to show how bottlenecks migrate across bridge/inter-tier/queue/fabric paths and how A.F.O control hooks respond.
 
 ---
 
-## 3. Experiment Tracks
+## 3) Environment
 
-| Track | Purpose | Main Outputs |
-|---|---|---|
-| Synthetic 3-axis | Fast sensitivity scan | `results/tables/sweep_summary.md` |
-| Full gem5 3-axis | Single-device baseline/sweep/tech comparison | `results/gem5_eval_3axis/tables/jsa_paper_summary.md` |
-| Datacenter scale-out | Model-derived cluster projection | `results/gem5_eval_datacenter_full/tables/datacenter_summary.md` |
-| Profile-guided replay | Serving-profile-log-derived replay validation | `results/paper_tables/profile_replay_summary.md` |
-| Distribution-matched synthetic | ShareGPT/vLLM-style length distribution mapping | `results/distribution_matched_large/distribution_matched_summary.md` |
-| Stress validation | Tail amplification and attribution movement | `results/paper_tables/stress_validation_summary.md` |
-| RTL-to-physical feasibility | Timing/signoff-readiness evidence tracking | `reports/final_feasibility_report.md` |
+Required:
+- Python 3.10+
+- gem5 binary: `third_party/gem5/build/ARM/gem5.opt`
+- Python packages: `matplotlib`, `protobuf`
 
----
+Optional (feasibility track):
+- OpenROAD / OpenSTA / Yosys
+- Magic / Netgen
 
-## 4. Code Layout
-
-- `sim/`: A.F.O cycle-inspired simulator core
-- `runtime/`: runtime policy logic
-- `experiments/`: experiment entrypoints/configs
-- `experiments/scripts/`: analysis/summary/plot generation scripts
-- `rtl/`: contract-control RTL and implementation helper scripts
-- `tools/`: timing parser, Fmax sweep, readiness/checklist generators
-- `results/`: experiment outputs (csv/json/md/figures)
-- `reports/`: feasibility/signoff-oriented summaries
-
-Key scripts:
-
-- `experiments/run_all.py`
-- `experiments/run_all_gem5.py`
-- `experiments/run_all_gem5_datacenter.py`
-- `experiments/run_profile_trace_replay.py`
-- `experiments/scripts/run_distribution_matched_synthetic.py`
-- `experiments/scripts/summarize_profile_replay_results.py`
-- `experiments/scripts/plot_profile_replay_validation.py`
-- `scripts/run_full_analysis.sh`
-
----
-
-## 5. How We Run Experiments
-
-### 5.1 Synthetic 3-axis
+Install Python deps:
 
 ```bash
-python3 experiments/run_all.py \
-  --config experiments/configs/base.json \
-  --seeds 5 \
-  --out-root results/eval_3axis
+python3 -m pip install --user --break-system-packages matplotlib protobuf
 ```
 
-### 5.2 Full gem5 3-axis
+---
+
+## 4) 1-Minute Smoke Test
+
+```bash
+./scripts/run_artifact_smoke.sh
+```
+
+This runs:
+- profile JSONL -> tiered CSV trace
+- CSV -> gem5 proto traces
+- gem5 replay baseline
+- replay summary generation
+
+Expected outputs:
+- `results/gem5_eval_profile_replay_smoke_artifact/eval/raw/baseline_comparison.csv`
+- `results/paper_tables/profile_replay_summary.md`
+
+One-command reviewer bundle (recommended):
+
+```bash
+# quick: smoke + baseline + replay summary/plots
+./scripts/run_reviewer_bundle.sh --profile quick
+
+# full: all major tracks in this README
+./scripts/run_reviewer_bundle.sh --profile full
+```
+
+---
+
+## 5) Core Repro Commands (Reviewer-Facing)
+
+Set gem5 binary once:
+
+```bash
+export GEM5_BIN="$(pwd)/third_party/gem5/build/ARM/gem5.opt"
+```
+
+### A. gem5 3-axis main run (A.F.O vs HBM GPU-class server baseline)
 
 ```bash
 python3 experiments/run_all_gem5.py \
-  --gem5-bin third_party/gem5/build/ARM/gem5.opt \
-  --out-root results/gem5_eval_3axis \
-  --only-axis all
+  --gem5-bin "$GEM5_BIN" \
+  --baseline-mode afo_hbm_server \
+  --only-axis all \
+  --out-root results/gem5_eval_3axis_afo_vs_hbm_server
 ```
 
-### 5.3 Datacenter model-derived projection
+Outputs:
+- `results/gem5_eval_3axis_afo_vs_hbm_server/raw/baseline_comparison.csv`
+- `results/gem5_eval_3axis_afo_vs_hbm_server/raw/sweep_bridge_bw_gbs.csv`
+- `results/gem5_eval_3axis_afo_vs_hbm_server/raw/sweep_tsv_uplink_bw_gbs.csv`
+- `results/gem5_eval_3axis_afo_vs_hbm_server/raw/interconnect_tech_comparison.csv`
+- `results/gem5_eval_3axis_afo_vs_hbm_server/tables/jsa_paper_summary.md`
+
+### B. Bridge-wise baseline-vs-baseline sweep/tech comparison
 
 ```bash
-python3 experiments/run_all_gem5_datacenter.py \
-  --gem5-bin third_party/gem5/build/ARM/gem5.opt \
-  --dc-config experiments/configs/datacenter_eval.json \
-  --out-root results/gem5_eval_datacenter_full
+python3 experiments/run_all_gem5.py \
+  --gem5-bin "$GEM5_BIN" \
+  --baseline-mode afo_hbm_server \
+  --compare-baselines-on-sweeps \
+  --only-axis all \
+  --out-root results/gem5_eval_3axis_afo_vs_hbm_server_bridgewise
 ```
 
-### 5.4 Profile-guided replay
+Use this run when you want A.F.O and HBM GPU-class server baseline shown side-by-side across bridge/inter-tier/technology axes.
+
+### C. Context-length hero sweep (4K~128K, optional tech profiles)
+
+```bash
+python3 experiments/run_context_hero_gem5.py \
+  --gem5-bin "$GEM5_BIN" \
+  --baseline-mode afo_hbm_server \
+  --include-tech-profiles \
+  --out-root results/gem5_eval_context_hero_afo_vs_hbm_server_bridgewise
+```
+
+Outputs:
+- `results/gem5_eval_context_hero_afo_vs_hbm_server_bridgewise/raw/context_len_hero.csv`
+- `results/gem5_eval_context_hero_afo_vs_hbm_server_bridgewise/raw/context_len_hero_preview.md`
+
+### D. Profile-guided replay validation
 
 ```bash
 python3 experiments/run_profile_trace_replay.py \
-  --profile-input <profile.jsonl> \
-  --out-root results/gem5_eval_profile_replay_small_sweep_tight_v2 \
-  --time-scale 0.02 \
-  --only-axis all
+  --profile-input experiments/fixtures/profile_smoke_events.jsonl \
+  --gem5-bin "$GEM5_BIN" \
+  --baseline-mode afo_hbm_server \
+  --only-axis all \
+  --out-root results/gem5_eval_profile_replay_small
 ```
 
-Post-processing:
+High-load/time-compressed replay variant (more bursty):
+
+```bash
+python3 experiments/run_profile_trace_replay.py \
+  --profile-input experiments/fixtures/profile_smoke_events.jsonl \
+  --gem5-bin "$GEM5_BIN" \
+  --baseline-mode afo_hbm_server \
+  --only-axis sweep \
+  --time-scale 0.02 \
+  --out-root results/gem5_eval_profile_replay_small_sweep_tight_v2
+```
+
+Summarize + plot replay outputs:
 
 ```bash
 python3 experiments/scripts/summarize_profile_replay_results.py \
@@ -118,126 +167,120 @@ python3 experiments/scripts/plot_profile_replay_validation.py \
   --out-dir results/figures
 ```
 
-### 5.5 Distribution-matched synthetic (ShareGPT/vLLM-style)
+### E. Distribution-matched synthetic validation (ShareGPT/vLLM-style)
 
 ```bash
 python3 experiments/scripts/run_distribution_matched_synthetic.py \
-  --profiles-config experiments/configs/distribution_matched_profiles.json \
-  --requests-per-profile 240 \
+  --out-dir results/distribution_matched_large \
+  --baselines AFO_Proposed,HBM_GPU-class_Server_Baseline \
+  --requests-per-profile 96 \
   --window-size 24 \
-  --seed 2026 \
-  --out-dir results/distribution_matched_large
+  --seed 2026
 ```
 
-### 5.6 Stress validation
+Outputs:
+- `results/distribution_matched_large/distribution_matched_summary.csv`
+- `results/distribution_matched_large/distribution_matched_summary.md`
+- `results/distribution_matched_large/distribution_matched_summary.json`
 
-- Axes: burst intensity, tenant count, shared-prefix ratio, prefetch accuracy, SRAM capacity, HBF latency, bridge-congestion stress
-- Outputs:
-  - `results/paper_tables/stress_validation_summary.md`
-  - `results/paper_tables/stress_hbm_delta.csv`
-
-### 5.7 RTL-to-physical feasibility track
+### F. Stress-validation assets (table + figure)
 
 ```bash
-source ./scripts/setup_eda_env.sh
+python3 experiments/scripts/build_stress_validation_assets.py \
+  --results-root results \
+  --table-out-dir results/paper_tables \
+  --figure-out results/figures/fig13_stress_validation_panels.png
+```
+
+Outputs:
+- `results/paper_tables/stress_validation_summary.csv`
+- `results/paper_tables/stress_validation_summary.md`
+- `results/paper_tables/stress_validation_table.tex`
+- `results/figures/fig13_stress_validation_panels.png`
+
+### G. Datacenter model-derived scale-out
+
+```bash
+python3 experiments/run_all_gem5_datacenter.py \
+  --gem5-bin "$GEM5_BIN" \
+  --baseline-mode afo_hbm_server \
+  --only-axis all \
+  --out-root results/gem5_eval_datacenter_afo_vs_hbm_server
+```
+
+Outputs:
+- `results/gem5_eval_datacenter_afo_vs_hbm_server/raw/datacenter_cluster_summary.csv`
+- `results/gem5_eval_datacenter_afo_vs_hbm_server/tables/datacenter_summary.md`
+
+### H. Feasibility-track report bundle (optional)
+
+```bash
 ./scripts/run_full_analysis.sh
 ```
 
----
-
-## 6. Key Results Snapshot
-
-### 6.1 gem5 single-device baseline
-
-- A.F.O: `1811.31 tok/s`
-- HBM-only: `1756.96 tok/s`
-- Throughput delta: `+3.09%`
-- p99 modeled memory-path service latency: near-equal (`0.01112 ms` vs `0.01111 ms`)
-
-### 6.2 Fairness-locked synthetic baseline
-
-- A.F.O: `534.60 tok/s`, `p99 245.280 ms`
-- HBM baseline: `497.53 tok/s`, `p99 267.473 ms`
-- Delta: `+7.45% tok/s`, `-8.30% p99`
-
-### 6.3 Distribution-matched synthetic (new)
-
-Source table:
-
-- `results/distribution_matched_large/distribution_matched_summary.md`
-
-Observed weighted aggregates:
-
-- ShareGPT/vLLM-style profile:
-  - A.F.O `532.29 tok/s`, p99 `249.524863 ms`
-  - HBM-only `497.31 tok/s`, p99 `268.830467 ms`
-  - Delta: `+7.03% tok/s`, `-7.18% p99`
-- DistServe-style profile:
-  - A.F.O `529.50 tok/s`, p99 `251.061060 ms`
-  - HBM-only `493.83 tok/s`, p99 `271.640952 ms`
-  - Delta: `+7.22% tok/s`, `-7.58% p99`
-
-Interpretation:
-
-- Even after mapping paper-anchored request-length/arrival distributions, the main direction remains consistent.
-- This remains **distribution-matched synthetic validation**, not end-to-end production serving benchmarking.
-
-### 6.4 Feasibility status snapshot
-
-- 1.0 ns (1 GHz) MCMM proxy closure: `NOT_CLOSED`
-- First passing relaxed point in sweep: `4.0 ns (~250 MHz)`
-- Scope: timing-aware feasibility evidence, not silicon-proven closure
-
----
-
-## 7. High-Value Output Files
-
-- `results/gem5_eval_3axis/tables/jsa_paper_summary.md`
-- `results/tables/baseline_comparison.md`
-- `results/paper_tables/profile_replay_summary.md`
-- `results/distribution_matched_large/distribution_matched_summary.md`
-- `results/paper_tables/stress_validation_summary.md`
+Outputs:
+- `reports/final_feasibility_report.md`
 - `reports/timing_summary.md`
 - `reports/signoff_checklist.md`
-- `reports/final_feasibility_report.md`
 
 ---
 
-## 8. Dependencies
+## 6) Script-to-Output Map
 
-- Python 3.10+
-- gem5 (`third_party/gem5/build/ARM/gem5.opt`)
-- OpenROAD / OpenSTA / Yosys (feasibility track)
-- Magic / Netgen (DRC/LVS proxy flow)
-- matplotlib (plot scripts)
-
-Example:
-
-```bash
-python3 -m pip install matplotlib
-```
+| Entry point | Primary output(s) | Purpose |
+|---|---|---|
+| `scripts/run_artifact_smoke.sh` | `results/gem5_eval_profile_replay_smoke_artifact/...` | 1-minute E2E sanity path |
+| `scripts/run_reviewer_bundle.sh` | `results/*` (profile-dependent) | one-command reviewer reproducibility bundle (`quick` / `full`) |
+| `experiments/run_all_gem5.py` | `results/gem5_eval_3axis_*/raw/*.csv` | core single-device baseline/sweep/tech |
+| `experiments/run_context_hero_gem5.py` | `results/gem5_eval_context_hero_*/raw/context_len_hero.csv` | context-length trend map |
+| `experiments/run_profile_trace_replay.py` | `results/gem5_eval_profile_replay_*/` | profile-guided replay layer |
+| `experiments/scripts/summarize_profile_replay_results.py` | `results/paper_tables/profile_replay_summary.{csv,md,tex}` | replay table material |
+| `experiments/scripts/plot_profile_replay_validation.py` | `results/figures/profile_replay_*.png` | replay figures |
+| `experiments/scripts/run_distribution_matched_synthetic.py` | `results/distribution_matched_*/distribution_matched_summary.*` | distribution-matched validation |
+| `experiments/scripts/build_stress_validation_assets.py` | `results/paper_tables/stress_validation_*`, `results/figures/fig13_*.png` | stress table + panel |
+| `experiments/run_all_gem5_datacenter.py` | `results/gem5_eval_datacenter_*/tables/datacenter_summary.md` | model-derived multi-device scale-out |
 
 ---
 
-## 9. Claim Boundary (Reviewer-safe)
+## 7) Metric Interpretation (Important)
 
-Use:
+- `p50/p95/p99` in this repository are **modeled memory-path service metrics**, not end-to-end user request latency.
+- `tok/s` and `p99 mpath` are different abstraction levels and should be interpreted together.
+- Datacenter numbers are **model-derived scale-out projections** from single-device measurements + explicit fabric assumptions, not distributed runtime benchmark traces.
 
-- timing-aware feasibility study
-- bridge/inter-tier bottleneck attribution/control evidence
+---
+
+## 8) Claim Boundaries
+
+Safe:
+- bridge/inter-tier bottleneck attribution/control
+- profile-guided replay validation layer
+- distribution-matched synthetic robustness
 - model-derived scale-out sensitivity
-- profile-guided replay validation
-- serving-profile-log-derived replay
+- timing-aware feasibility study (reports track)
 
 Avoid:
-
 - silicon-proven
 - production-ready chip
-- end-to-end production serving validation
-- universal superiority
+- end-to-end production-serving benchmark
+- universal superiority claim
 
-Notes:
+---
 
-- `p50/p95/p99` values here are modeled memory-path service metrics in this methodology.
-- Datacenter results are model-derived projections, not distributed runtime benchmark measurements.
+## 9) Local-Only Directories (Do Not Push)
 
+- `paper22/`
+- `paper!!!!!!/`
+- `paper!@!/`
+- `elsarticle/`
+
+---
+
+## 10) Troubleshooting
+
+- If gem5 binary is missing:
+  - set `GEM5_BIN` to your built `gem5.opt`
+- If protobuf import fails:
+  - `python3 -m pip install --user --break-system-packages protobuf`
+- If replay summary is empty:
+  - verify profile input path and `results/gem5_eval_profile_replay_*/eval/raw/` contents
